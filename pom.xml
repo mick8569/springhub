@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.mick8569</groupId>
+	<artifactId>springhub</artifactId>
+	<packaging>pom</packaging>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<modules>
+		<module>spring-backend</module>
+		<module>spring-web</module>
+	</modules>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.6</java.version>
+
+		<slf4j.version>1.7.2</slf4j.version>
+		<logback.version>1.0.9</logback.version>
+
+		<!-- Import JSR 330 Annotations -->
+		<javax-inject.version>1</javax-inject.version>
+
+		<!-- Spring Version -->
+		<spring.version>3.2.1.RELEASE</spring.version>
+		<spring-context.version>${spring.version}</spring-context.version>
+		<spring-jdbc.version>${spring.version}</spring-jdbc.version>
+		<spring-orm.version>${spring.version}</spring-orm.version>
+		<spring-aop.version>${spring.version}</spring-aop.version>
+		<spring-beans.version>${spring.version}</spring-beans.version>
+		<spring-tx.version>${spring.version}</spring-tx.version>
+		<spring-web.version>${spring.version}</spring-web.version>
+		<spring-webmvc.version>${spring.version}</spring-webmvc.version>
+
+		<!-- JPA2 - Hibernate -->
+		<jpa-2.0-api.version>1.0.1.Final</jpa-2.0-api.version>
+		<hibernate.version>4.1.0.Final</hibernate.version>
+		<hibernate-entitymanager.version>${hibernate.version}</hibernate-entitymanager.version>
+
+		<!-- CGLib -->
+		<cglib-nodep.version>2.2.2</cglib-nodep.version>
+
+		<!-- Apache Commons -->
+		<commons-lang3.version>3.1</commons-lang3.version>
+		<commons-fileupload.version>1.2.2</commons-fileupload.version>
+		<commons-io.version>2.4</commons-io.version>
+		<commons-codec.version>1.7</commons-codec.version>
+
+		<!-- Dozer -->
+		<dozer.version>5.4.0</dozer.version>
+
+		<!-- Jackson (JSON Serialization) -->
+		<jackson.version>1.9.5</jackson.version>
+		<jackson-mapper-asl.version>${jackson.version}</jackson-mapper-asl.version>
+		<jackson-core-asl.version>${jackson.version}</jackson-core-asl.version>
+
+		<!-- Servlet 3.0 -->
+		<geronimo-servlet_3.0_spec.version>1.0</geronimo-servlet_3.0_spec.version>
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>springsource-repo</id>
+			<name>SpringSource Repository</name>
+			<url>http://repo.springsource.org/release</url>
+		</repository>
+		<repository>
+			<id>repository.jboss.org-public</id>
+			<name>JBoss repository</name>
+			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
+		</repository>
+	</repositories>
+
+</project>
