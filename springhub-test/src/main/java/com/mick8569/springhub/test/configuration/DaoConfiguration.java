@@ -8,15 +8,27 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.Database;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
+import java.util.Map;
+import java.util.Properties;
 
 @Configuration
 @EnableTransactionManagement(proxyTargetClass = true)
 public abstract class DaoConfiguration {
 
-	public abstract String persistenceUnitName();
+	public boolean showSql() {
+		return false;
+	}
+
+	public abstract String packagesToScan();
+
+	public Map<String, Object> jpaProperties() {
+		return null;
+	}
 
 	/**
 	 * Test datasource.
@@ -34,8 +46,33 @@ public abstract class DaoConfiguration {
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
 		LocalContainerEntityManagerFactoryBean entityManagerFactory = new LocalContainerEntityManagerFactoryBean();
 		entityManagerFactory.setPersistenceProviderClass(HibernatePersistence.class);
-		entityManagerFactory.setPersistenceUnitName(persistenceUnitName());
 		entityManagerFactory.setDataSource(dataSource());
+
+		// Scan entities
+		entityManagerFactory.setPackagesToScan(packagesToScan());
+
+		// Set hibernate properties
+		HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+		vendorAdapter.setShowSql(showSql());
+		vendorAdapter.setDatabase(Database.H2);
+		entityManagerFactory.setJpaVendorAdapter(vendorAdapter);
+
+		// Set custom JPA properties
+		Properties props = new Properties();
+		props.setProperty("hibernate.hbm2ddl.auto", "create-drop");
+		props.setProperty("hibernate.connection.tinyInt1isBit", "true");
+		props.setProperty("hibernate.connection.transformedBitIsBoolean", "true");
+		props.setProperty("hibernate.default_batch_fetch_size", "100");
+
+		Map<String, Object> properties = jpaProperties();
+		if (properties != null && !properties.isEmpty()) {
+			for (Map.Entry<String, Object> e : properties.entrySet()) {
+				props.setProperty(e.getKey(), e.getValue().toString());
+			}
+		}
+
+		entityManagerFactory.setJpaProperties(props);
+
 		return entityManagerFactory;
 	}
 
