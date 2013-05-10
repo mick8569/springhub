@@ -10,9 +10,9 @@
 	<version>0.0.1-SNAPSHOT</version>
 
 	<modules>
-		<module>spring-backend</module>
-		<module>spring-web</module>
-		<module>spring-test</module>
+		<module>springhub-backend</module>
+		<module>springhub-web</module>
+		<module>springhub-test</module>
 	</modules>
 
 	<distributionManagement>
