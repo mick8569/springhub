@@ -8,7 +8,6 @@ import org.mockito.Mockito;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -75,7 +74,7 @@ public class AbstractGenericDaoTest {
 	@Test
 	public void test_find() {
 		FooEntity foo = new FooEntity();
-		Mockito.when(entityManager.find(FooEntity.class, BigInteger.ONE)).thenReturn(foo);
+		Mockito.when(entityManager.find(FooEntity.class, 1L)).thenReturn(foo);
 		FooEntity result = dao().find(1L);
 		Assertions.assertThat(result).isNotNull().isEqualTo(foo);
 		Mockito.verify(entityManager).find(FooEntity.class, 1L);
