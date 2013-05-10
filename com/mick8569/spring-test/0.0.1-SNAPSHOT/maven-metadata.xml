@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata modelVersion="1.1.0">
   <groupId>com.mick8569</groupId>
-  <artifactId>spring-web</artifactId>
+  <artifactId>spring-test</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <versioning>
     <snapshot>
-      <timestamp>20130510.181453</timestamp>
+      <timestamp>20130510.181459</timestamp>
       <buildNumber>1</buildNumber>
     </snapshot>
-    <lastUpdated>20130510181453</lastUpdated>
+    <lastUpdated>20130510181459</lastUpdated>
     <snapshotVersions>
       <snapshotVersion>
         <extension>jar</extension>
-        <value>0.0.1-20130510.181453-1</value>
-        <updated>20130510181453</updated>
+        <value>0.0.1-20130510.181459-1</value>
+        <updated>20130510181459</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>pom</extension>
-        <value>0.0.1-20130510.181453-1</value>
-        <updated>20130510181453</updated>
+        <value>0.0.1-20130510.181459-1</value>
+        <updated>20130510181459</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>

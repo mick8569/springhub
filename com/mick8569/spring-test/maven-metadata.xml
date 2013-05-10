@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata>
   <groupId>com.mick8569</groupId>
-  <artifactId>spring-web</artifactId>
+  <artifactId>spring-test</artifactId>
   <versioning>
     <versions>
       <version>0.0.1-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20130510181453</lastUpdated>
+    <lastUpdated>20130510181459</lastUpdated>
   </versioning>
 </metadata>
