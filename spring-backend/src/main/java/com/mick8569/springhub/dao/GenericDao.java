@@ -4,11 +4,10 @@ import com.mick8569.springhub.exceptions.NotImplementedException;
 import com.mick8569.springhub.models.entities.AbstractEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
+/** Generic DAO used to retrieve entities. */
 public class GenericDao extends AbstractDao<AbstractEntity> {
 
 	/** Class logger */
@@ -60,7 +59,7 @@ public class GenericDao extends AbstractDao<AbstractEntity> {
 	 * @param klass Entity class.
 	 * @return Number of items in database.
 	 */
-	public <T extends AbstractEntity> Long count(Class<T> klass) {
+	public <T extends AbstractEntity> long count(Class<T> klass) {
 		return (Long) entityManager.createQuery("SELECT COUNT(x) FROM " + klass.getSimpleName() + " x").getSingleResult();
 	}
 }

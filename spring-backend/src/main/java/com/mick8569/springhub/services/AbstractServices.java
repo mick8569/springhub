@@ -10,6 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import java.util.List;
 
+/**
+ * Abstract services, implement crud operations on a given entity.
+ *
+ * @param <T> Entity class.
+ */
 @Service
 public abstract class AbstractServices<T extends AbstractEntity> {
 
@@ -50,7 +55,7 @@ public abstract class AbstractServices<T extends AbstractEntity> {
 	 * @return Count.
 	 */
 	@Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-	public Long count() {
+	public long count() {
 		return genericDao.count(type);
 	}
 

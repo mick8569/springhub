@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -64,6 +66,46 @@ public abstract class Crypto {
 			LOG.error(ex.getMessage(), ex);
 			return data;
 		}
+	}
+
+	/**
+	 * Encrypt string with AES encryption and URL encode result in UTF-8.
+	 *
+	 * @param data   Data to encrypt.
+	 * @param salt   Salt use to encrypt data.
+	 * @param secret Secret use for encryption.
+	 * @return Encrypted data.
+	 */
+	public static String encryptAES_UTF8(String data, String salt, String secret) {
+		return encryptAES_UTF8(salt + data, secret);
+	}
+
+	/**
+	 * Encrypt string with AES encryption and URL encode result in UTF-8.
+	 *
+	 * @param data   Data to encrypt.
+	 * @param secret Secret use for encryption.
+	 * @return Encrypted data.
+	 */
+	public static String encryptAES_UTF8(String data, String secret) {
+		try {
+			return URLEncoder.encode(Crypto.encryptAES(data, secret), "UTF-8");
+		} catch (Exception ex) {
+			LOG.error(ex.getMessage(), ex);
+			return data;
+		}
+	}
+
+	/**
+	 * Encrypt string with AES encryption.
+	 *
+	 * @param data   Data to encrypt.
+	 * @param salt   Salt use to encrypt data.
+	 * @param secret Secret use for encryption.
+	 * @return Encrypted data.
+	 */
+	public static String encryptAES(String data, String salt, String secret) {
+		return Crypto.encryptAES(salt + data, secret);
 	}
 
 	/**
@@ -130,6 +172,45 @@ public abstract class Crypto {
 		} catch (NoSuchAlgorithmException ex) {
 			LOG.error(ex.getMessage(), ex);
 			return null;
+		}
+	}
+
+	/**
+	 * Decript string encrypted with AES encryption. <br />
+	 * String is first URL decoded using UTF-8 encoding and then decrypted using salt and secret.
+	 *
+	 * @param encrypted String to decrypt.
+	 * @param salt      Salt used to encrypt string.
+	 * @param secret    Secret used to encrypt string.
+	 * @return Decrypted string.
+	 */
+	public static String decryptAES_UTF8(String encrypted, String salt, String secret) {
+		try {
+			String value = URLDecoder.decode(encrypted, "UTF-8");
+			String decrypted = Crypto.decryptAES(value, secret);
+			if (!decrypted.startsWith(salt)) {
+				return null;
+			}
+			return decrypted.substring(salt.length());
+		} catch (Exception ex) {
+			return encrypted;
+		}
+	}
+
+	/**
+	 * Decript string encrypted with AES encryption. <br />
+	 * String is first URL decoded using UTF-8 encoding and then decrypted using secret.
+	 *
+	 * @param encrypted String to decrypt.
+	 * @param secret    Secret used to encrypt string.
+	 * @return Decrypted string.
+	 */
+	public static String decryptAES_UTF8(String encrypted, String secret) {
+		try {
+			String value = URLDecoder.decode(encrypted, "UTF-8");
+			return Crypto.decryptAES(value, secret);
+		} catch (Exception ex) {
+			return encrypted;
 		}
 	}
 }

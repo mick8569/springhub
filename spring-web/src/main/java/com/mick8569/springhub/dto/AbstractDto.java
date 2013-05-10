@@ -1,13 +1,18 @@
 package com.mick8569.springhub.dto;
 
-import com.mick8569.springhub.models.entities.AbstractEntity;
+import com.mick8569.springhub.commons.web.json.Json;
+import com.mick8569.springhub.models.AbstractModel;
 import org.apache.commons.beanutils.BeanMap;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import java.io.Serializable;
 import java.util.Map;
 
 @SuppressWarnings("serial")
-public class AbstractDto<MODEL extends AbstractEntity> implements Serializable {
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+public class AbstractDto<MODEL extends AbstractModel> implements Serializable {
 
 	/** DTO identifier */
 	protected Long id;
@@ -24,7 +29,7 @@ public class AbstractDto<MODEL extends AbstractEntity> implements Serializable {
 	 */
 	public AbstractDto(MODEL entity) {
 		super();
-		this.id = entity.getId();
+		this.id = entity.modelId();
 	}
 
 	/**
@@ -52,5 +57,14 @@ public class AbstractDto<MODEL extends AbstractEntity> implements Serializable {
 	 */
 	public Map<String, Object> toMap() {
 		return new BeanMap(this);
+	}
+
+	/**
+	 * Serialize DTO to json string.
+	 *
+	 * @return JSON value of DTO.
+	 */
+	public String toJson() {
+		return Json.toJson(this);
 	}
 }

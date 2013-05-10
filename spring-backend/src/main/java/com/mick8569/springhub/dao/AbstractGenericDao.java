@@ -4,32 +4,39 @@ import com.mick8569.springhub.commons.reflections.ReflectionUtils;
 import com.mick8569.springhub.models.entities.AbstractGenericEntity;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
+import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * DAO implementation.
+ *
+ * @param <T>  Entity class.
+ */
 @Repository
-public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK> {
+public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 
 	/** Parameterized class */
 	protected Class<T> type = null;
 
-	/** Entity manager */
-	@PersistenceContext
-	protected EntityManager entityManager;
-
-	protected AbstractGenericDao() {
+	public AbstractGenericDao() {
 		this.type = (Class<T>) ReflectionUtils.getGenericType(getClass(), 0);
 	}
 
+	/** Entity Manager */
+	protected abstract EntityManager entityManager();
+
 	/** Flush persistence context. */
 	public void flush() {
-		entityManager.flush();
+		entityManager().flush();
 	}
 
 	/** Clear persistence context */
 	public void clear() {
-		entityManager.clear();
+		entityManager().clear();
 	}
 
 	/**
@@ -39,7 +46,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @return True if entity is managed, false otherwise.
 	 */
 	public boolean isManaged(T o) {
-		return entityManager.contains(o);
+		return entityManager().contains(o);
 	}
 
 	/**
@@ -48,7 +55,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @param o Entity to persist.
 	 */
 	public void persist(T o) {
-		entityManager.persist(o);
+		entityManager().persist(o);
 	}
 
 	/**
@@ -58,7 +65,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @return Merged entity.
 	 */
 	public T merge(T o) {
-		return entityManager.merge(o);
+		return entityManager().merge(o);
 	}
 
 	/**
@@ -67,7 +74,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @param o Entity to remove.
 	 */
 	public void remove(T o) {
-		entityManager.remove(o);
+		entityManager().remove(o);
 	}
 
 	/**
@@ -76,7 +83,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @param o Entity to refresh.
 	 */
 	public void refresh(T o) {
-		entityManager.refresh(o);
+		entityManager().refresh(o);
 	}
 
 	/**
@@ -85,7 +92,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @param o Entity to detach.
 	 */
 	public void detach(T o) {
-		entityManager.detach(o);
+		entityManager().detach(o);
 	}
 
 	/**
@@ -96,7 +103,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @param lockModeType Lock type.
 	 */
 	public void lock(T o, LockModeType lockModeType) {
-		entityManager.lock(o, lockModeType);
+		entityManager().lock(o, lockModeType);
 	}
 
 	/**
@@ -105,8 +112,8 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @param primaryKey Primary key.
 	 * @return Entity.
 	 */
-	public T find(PK primaryKey) {
-		return entityManager.find(type, primaryKey);
+	public T find(Long primaryKey) {
+		return entityManager().find(type, primaryKey);
 	}
 
 	/**
@@ -118,8 +125,8 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	public List<T> findAll() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT x ");
-		sb.append("FROM ").append(type.getSimpleName()).append(" x ");
-		Query query = entityManager.createQuery(sb.toString());
+		sb.append("FROM ").append(type.getSimpleName()).append(" x");
+		Query query = entityManager().createQuery(sb.toString());
 		return query.getResultList();
 	}
 
@@ -131,8 +138,8 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	public long count() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT COUNT(x) ");
-		sb.append("FROM ").append(type.getSimpleName()).append(" x ");
-		Query query = entityManager.createQuery(sb.toString());
+		sb.append("FROM ").append(type.getSimpleName()).append(" x");
+		Query query = entityManager().createQuery(sb.toString());
 		return (Long) query.getSingleResult();
 	}
 
@@ -142,7 +149,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @param query Query.
 	 * @return All entities matching given query.
 	 */
-	protected List<T> getEntityList(String query) {
+	public List<T> getEntityList(String query) {
 		return getEntityList(query, null);
 	}
 
@@ -153,7 +160,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @param limit Maximum number of results.
 	 * @return All entities matching given query.
 	 */
-	protected List<T> getEntityList(String query, int limit) {
+	public List<T> getEntityList(String query, int limit) {
 		return getEntityList(query, null, limit);
 	}
 
@@ -164,7 +171,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @param params Query parameters.
 	 * @return All entities matching given query.
 	 */
-	protected List<T> getEntityList(String query, Map<String, Object> params) {
+	public List<T> getEntityList(String query, Map<String, Object> params) {
 		return getEntityList(query, params, -1);
 	}
 
@@ -176,8 +183,8 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @param limit  Maximum number of results.
 	 * @return All entities matching given query.
 	 */
-	protected List<T> getEntityList(String query, Map<String, Object> params, int limit) {
-		Query q = entityManager.createQuery(query);
+	public List<T> getEntityList(String query, Map<String, Object> params, int limit) {
+		Query q = entityManager().createQuery(query);
 
 		if (limit > 0) {
 			q.setMaxResults(limit);
@@ -199,7 +206,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @return All entities matching given query.
 	 */
 	@SuppressWarnings("unchecked")
-	protected List<T> getEntityList(Query query) {
+	public List<T> getEntityList(Query query) {
 		return (List<T>) query.getResultList();
 	}
 
@@ -209,7 +216,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @param query Query.
 	 * @return Entity, null if no entity match given query.
 	 */
-	protected T getSingleEntity(String query) {
+	public T getSingleEntity(String query) {
 		return getSingleEntity(query, null);
 	}
 
@@ -220,8 +227,8 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @param params Query parameters.
 	 * @return Entity, null if no entity match given query.
 	 */
-	protected T getSingleEntity(String query, Map<String, ? extends Object> params) {
-		Query q = entityManager.createQuery(query);
+	public T getSingleEntity(String query, Map<String, ? extends Object> params) {
+		Query q = entityManager().createQuery(query);
 		if ((params != null) && (!params.isEmpty())) {
 			for (Map.Entry<String, ? extends Object> e : params.entrySet()) {
 				q.setParameter(e.getKey(), e.getValue());
@@ -237,7 +244,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @return Entity, null if no entity match given query.
 	 */
 	@SuppressWarnings("unchecked")
-	protected T getSingleEntity(Query query) {
+	public T getSingleEntity(Query query) {
 		try {
 			return (T) query.getSingleResult();
 		} catch (NoResultException ex) {
@@ -251,7 +258,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @param query Query.
 	 * @return Number of entities matching given query.
 	 */
-	protected long getCount(String query) {
+	public long getCount(String query) {
 		return getCount(query, null);
 	}
 
@@ -262,8 +269,8 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @param params Query parameters.
 	 * @return Number of entities matching given query.
 	 */
-	protected long getCount(String query, Map<String, ? extends Object> params) {
-		Query q = entityManager.createQuery(query);
+	public long getCount(String query, Map<String, ? extends Object> params) {
+		Query q = entityManager().createQuery(query);
 		if ((params != null) && (!params.isEmpty())) {
 			for (Map.Entry<String, ? extends Object> e : params.entrySet()) {
 				q.setParameter(e.getKey(), e.getValue());
@@ -278,7 +285,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity<PK>, PK
 	 * @param query Query.
 	 * @return Number of entities matching given query.
 	 */
-	protected long getCount(Query query) {
+	public long getCount(Query query) {
 		return (Long) query.getSingleResult();
 	}
 }

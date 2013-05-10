@@ -3,16 +3,23 @@ package com.mick8569.springhub.mappers;
 import com.mick8569.springhub.commons.reflections.ReflectionUtils;
 import com.mick8569.springhub.dao.GenericDao;
 import com.mick8569.springhub.dto.AbstractDto;
+import com.mick8569.springhub.models.AbstractModel;
 import com.mick8569.springhub.models.entities.AbstractEntity;
 import org.dozer.Mapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
-public class AbstractMapper<MODEL extends AbstractEntity, DTO extends AbstractDto<MODEL>> {
+public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto<MODEL>> {
+
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractMapper.class);
 
 	/** Model's class */
 	private Class<MODEL> modelClass;
@@ -97,9 +104,61 @@ public class AbstractMapper<MODEL extends AbstractEntity, DTO extends AbstractDt
 	 * @return Converted entity.
 	 */
 	protected MODEL createEntity(DTO dto) {
-		Long id = dto.getId();
-		MODEL model = (MODEL) genericDao.find(this.modelClass.asSubclass(AbstractEntity.class), id);
+		MODEL model = null;
+
+		if (this.modelClass.isAssignableFrom(AbstractEntity.class)) {
+			model = (MODEL) genericDao.find(this.modelClass.asSubclass(AbstractEntity.class), dto.getId());
+		} else {
+			try {
+				model = this.modelClass.newInstance();
+			} catch (InstantiationException ex) {
+				LOG.error(ex.getMessage(), ex);
+				return null;
+			} catch (IllegalAccessException ex) {
+				LOG.error(ex.getMessage(), ex);
+				return null;
+			}
+		}
+
 		mapper.map(dto, model);
 		return model;
+	}
+
+	/**
+	 * Convert a list of entities to a list of dtos.
+	 *
+	 * @param entities Entities to convert.
+	 * @return Converted dtos.
+	 */
+	@Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+	public List<DTO> getDtos(List<MODEL> entities) {
+		List<DTO> dtos = new ArrayList<DTO>();
+		if ((entities != null) && (!entities.isEmpty())) {
+			dtos = new ArrayList<DTO>(entities.size());
+			for (MODEL MODEL : entities) {
+				DTO dto = getDto(MODEL);
+				dtos.add(dto);
+			}
+		}
+		return dtos;
+	}
+
+	/**
+	 * Convert a list of dtos to a list of entites.
+	 *
+	 * @param dtos DTOs to convert.
+	 * @return Converted entities.
+	 */
+	@Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+	public List<MODEL> getEntities(List<DTO> dtos) {
+		List<MODEL> entities = new ArrayList<MODEL>();
+		if ((dtos != null) && (!dtos.isEmpty())) {
+			entities = new ArrayList<MODEL>(dtos.size());
+			for (DTO dto : dtos) {
+				MODEL MODEL = getEntity(dto);
+				entities.add(MODEL);
+			}
+		}
+		return entities;
 	}
 }

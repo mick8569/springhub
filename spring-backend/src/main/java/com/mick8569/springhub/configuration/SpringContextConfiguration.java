@@ -1,6 +1,9 @@
 package com.mick8569.springhub.configuration;
 
+import com.mick8569.springhub.commons.context.SpringApplicationContext;
+import com.mick8569.springhub.dao.GenericDao;
 import org.hibernate.ejb.HibernatePersistence;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -28,5 +31,15 @@ public abstract class SpringContextConfiguration {
 		JpaTransactionManager txManager = new JpaTransactionManager();
 		txManager.setDataSource(dataSource());
 		return txManager;
+	}
+
+	@Bean
+	public ApplicationContextAware applicationContext() {
+		return new SpringApplicationContext();
+	}
+
+	@Bean
+	public GenericDao genericDao() {
+		return new GenericDao();
 	}
 }

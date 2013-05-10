@@ -1,11 +1,17 @@
 package com.mick8569.springhub.models.entities;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
-public abstract class AbstractEntity extends AbstractGenericEntity<Long> {
+/**
+ * Entity using default configuration :
+ * <ul>
+ * <li>Primary key is a Long.</li>
+ * <li>Identifier is stored in a column named 'ID'</li>
+ * <li>Id is generated using {@linkplain javax.persistence.GenerationType#IDENTITY}</li>
+ * </ul>
+ */
+@MappedSuperclass
+public abstract class AbstractEntity extends AbstractGenericEntity {
 
 	/** Id of entity */
 	@Id
@@ -19,7 +25,12 @@ public abstract class AbstractEntity extends AbstractGenericEntity<Long> {
 
 	@Override
 	public Long entityId() {
-		return id;
+		return getId();
+	}
+
+	@Override
+	public Long modelId() {
+		return getId();
 	}
 
 	/**

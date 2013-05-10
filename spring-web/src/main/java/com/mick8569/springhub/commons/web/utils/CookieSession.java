@@ -5,8 +5,6 @@ import com.mick8569.springhub.commons.crypto.Crypto;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 
 public abstract class CookieSession {
 
@@ -35,16 +33,7 @@ public abstract class CookieSession {
 	 * @return Decrypted value.
 	 */
 	private String decryptCookieValue(String encrypted) {
-		try {
-			String value = URLDecoder.decode(encrypted, "UTF-8");
-			String decrypted = Crypto.decryptAES(value, secret());
-			if (!decrypted.startsWith(salt())) {
-				return null;
-			}
-			return decrypted.substring(salt().length());
-		} catch (Exception ex) {
-			return encrypted;
-		}
+		return Crypto.decryptAES_UTF8(encrypted, salt(), secret());
 	}
 
 	/**
@@ -54,13 +43,7 @@ public abstract class CookieSession {
 	 * @return Encrypted value.
 	 */
 	private String encryptCookieValue(String value) {
-		try {
-			String val = salt() + value;
-			String encrypted = Crypto.encryptAES(val, secret());
-			return URLEncoder.encode(encrypted, "UTF-8");
-		} catch (Exception ex) {
-			return value;
-		}
+		return Crypto.encryptAES_UTF8(value, salt(), secret());
 	}
 
 	/**

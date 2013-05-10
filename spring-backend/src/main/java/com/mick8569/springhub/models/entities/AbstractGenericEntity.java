@@ -1,19 +1,35 @@
 package com.mick8569.springhub.models.entities;
 
+import com.mick8569.springhub.models.AbstractModel;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
 
-public abstract class AbstractGenericEntity<PK> {
+/**
+ * Generic JPA entity.
+ */
+@MappedSuperclass
+public abstract class AbstractGenericEntity extends AbstractModel {
 
 	/** Version (lock optimistic) */
 	@Version
 	protected long version;
 
-	public abstract PK entityId();
+	/**
+	 * Get identifier of entity.
+	 *
+	 * @return Identifier of entity.
+	 */
+	public abstract Long entityId();
+
+	@Override
+	public Long modelId() {
+		return entityId();
+	}
 
 	/**
 	 * Get {@link #version}
@@ -47,18 +63,20 @@ public abstract class AbstractGenericEntity<PK> {
 		if (o == this) {
 			return true;
 		}
-		if (o instanceof AbstractEntity) {
+
+		if (o instanceof AbstractGenericEntity) {
 			boolean inherits = o.getClass().isAssignableFrom(this.getClass())
 					|| this.getClass().isAssignableFrom(o.getClass());
 
 			if (inherits) {
-				AbstractEntity e = (AbstractEntity) o;
+				AbstractGenericEntity e = (AbstractGenericEntity) o;
 				if ((entityId() == null) || (e.entityId() == null)) {
 					return false;
 				}
 				return new EqualsBuilder().append(entityId(), e.entityId()).isEquals();
 			}
 		}
+
 		return false;
 	}
 
