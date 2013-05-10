@@ -126,6 +126,8 @@
 					<!-- github repo name -->
 					<repositoryOwner>mick8569</repositoryOwner>
 					<!-- github username  -->
+					<merge>true</merge>
+					<!-- Do not override previous artifacts -->
 				</configuration>
 				<executions>
 					<!-- run site-maven-plugin's 'site' target as part of the build's normal 'deploy' phase -->
