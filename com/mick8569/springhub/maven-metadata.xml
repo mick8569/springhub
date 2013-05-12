@@ -3,9 +3,10 @@
   <groupId>com.mick8569</groupId>
   <artifactId>springhub</artifactId>
   <versioning>
+    <release>0.0.1</release>
     <versions>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.0.1</version>
     </versions>
-    <lastUpdated>20130512134130</lastUpdated>
+    <lastUpdated>20130512162200</lastUpdated>
   </versioning>
 </metadata>
