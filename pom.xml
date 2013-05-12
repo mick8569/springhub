@@ -5,7 +5,7 @@
 	<groupId>com.mick8569</groupId>
 	<artifactId>springhub</artifactId>
 	<packaging>pom</packaging>
-	<version>0.0.1</version>
+	<version>0.0.2-SNAPSHOT</version>
 
 	<modules>
 		<module>springhub-backend</module>
@@ -27,7 +27,7 @@
 		<connection>scm:git:git@github.com:mick8569/springhub.git</connection>
 		<developerConnection>scm:git:git@github.com:mick8569/springhub.git</developerConnection>
 		<url>https://github.com/mick8569/springhub</url>
-	  <tag>v0.0.1</tag>
+	  <tag>HEAD</tag>
   </scm>
 
 	<properties>
