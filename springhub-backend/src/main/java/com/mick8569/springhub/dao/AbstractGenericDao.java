@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.util.List;
@@ -114,6 +115,21 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 */
 	public T find(Long primaryKey) {
 		return entityManager().find(type, primaryKey);
+	}
+
+	/**
+	 * Get reference to an instance, whose state may be lazily fetched.
+	 *
+	 * @param primaryKey Primary key.
+	 * @return Reference to the entity.
+	 */
+	public T getReference(Long primaryKey) {
+		try {
+			return entityManager().getReference(type, primaryKey);
+		}
+		catch (EntityNotFoundException ex) {
+			return null;
+		}
 	}
 
 	/**

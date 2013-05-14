@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,11 @@ public class GenericDaoTest {
 		dao.count();
 	}
 
+	@Test(expected = NotImplementedException.class)
+        public void test_getReference() {
+                dao.getReference(1L);
+        }
+
 	@Test
 	public void test_find_class() {
 		Mockito.when(entityManager.find(FooEntity.class, 1L)).thenReturn(new FooEntity());
@@ -46,6 +52,22 @@ public class GenericDaoTest {
 		Assertions.assertThat(result).isNotNull();
 		Mockito.verify(entityManager).find(FooEntity.class, 1L);
 	}
+
+	@Test
+        public void test_getReference_class() {
+                Mockito.when(entityManager.getReference(FooEntity.class, 1L)).thenReturn(new FooEntity());
+                FooEntity result = dao.getReference(FooEntity.class, 1L);
+                Assertions.assertThat(result).isNotNull();
+                Mockito.verify(entityManager).getReference(FooEntity.class, 1L);
+        }
+
+	@Test
+        public void test_getReference_exception_class() {
+                Mockito.when(entityManager.getReference(FooEntity.class, 1L)).thenThrow(EntityNotFoundException.class);
+                FooEntity result = dao.getReference(FooEntity.class, 1L);
+                Assertions.assertThat(result).isNull();
+                Mockito.verify(entityManager).getReference(FooEntity.class, 1L);
+        }
 
 	@Test
 	public void test_findAll_class() {

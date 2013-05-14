@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import javax.persistence.EntityNotFoundException;
 
 /** Generic DAO used to retrieve entities. */
 public class GenericDao extends AbstractDao<AbstractEntity> {
@@ -31,6 +32,12 @@ public class GenericDao extends AbstractDao<AbstractEntity> {
 		throw new NotImplementedException("You have to specified entity class in generic dao");
 	}
 
+	@Override
+	public AbstractEntity getReference(Long id) {
+		LOG.error("You have to specified entity class in generic dao");
+		throw new NotImplementedException("You have to specified entity class in generic dao");
+	}
+
 	/**
 	 * Find item in database with its id.
 	 *
@@ -40,6 +47,22 @@ public class GenericDao extends AbstractDao<AbstractEntity> {
 	 */
 	public <T extends AbstractEntity> T find(Class<T> klass, Long primaryKey) {
 		return entityManager.find(klass, primaryKey);
+	}
+
+	/**
+	 * Get reference to an entity with its id.
+	 *
+	 * @param klass      Entity class of item to look for.
+	 * @param primaryKey Id in database.
+	 * @return Reference to founded item or null.
+	 */
+	public <T extends AbstractEntity> T getReference(Class<T> klass, Long primaryKey) {
+		try {
+			return entityManager.getReference(klass, primaryKey);
+		}
+		catch (EntityNotFoundException ex) {
+			return null;
+		}
 	}
 
 	/**

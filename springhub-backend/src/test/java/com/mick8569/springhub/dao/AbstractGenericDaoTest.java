@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.util.Arrays;
@@ -79,6 +80,24 @@ public class AbstractGenericDaoTest {
 		Assertions.assertThat(result).isNotNull().isEqualTo(foo);
 		Mockito.verify(entityManager).find(FooEntity.class, 1L);
 	}
+
+	@Test
+        public void test_getReference() {
+                FooEntity foo = new FooEntity();
+                Mockito.when(entityManager.getReference(FooEntity.class, 1L)).thenReturn(foo);
+                FooEntity result = dao().getReference(1L);
+                Assertions.assertThat(result).isNotNull().isEqualTo(foo);
+                Mockito.verify(entityManager).getReference(FooEntity.class, 1L);
+        }
+
+	@Test
+        public void test_getReference_notFound() {
+                FooEntity foo = new FooEntity();
+                Mockito.when(entityManager.getReference(FooEntity.class, 1L)).thenThrow(EntityNotFoundException.class);
+                FooEntity result = dao().getReference(1L);
+                Assertions.assertThat(result).isNull();
+                Mockito.verify(entityManager).getReference(FooEntity.class, 1L);
+        }
 
 	@Test
 	public void test_findAll() {
