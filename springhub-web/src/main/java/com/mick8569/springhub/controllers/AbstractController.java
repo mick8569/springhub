@@ -1,13 +1,27 @@
 package com.mick8569.springhub.controllers;
 
 import com.mick8569.springhub.commons.web.utils.Browser;
+import com.mick8569.springhub.exceptions.DisconnectedException;
+import com.mick8569.springhub.exceptions.EntityNotFoundException;
+import com.mick8569.springhub.exceptions.NotImplementedException;
+import com.mick8569.springhub.exceptions.RequestParameterException;
+import com.mick8569.springhub.exceptions.ResourceNotFoundException;
+import com.mick8569.springhub.exceptions.UnauthorizedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @Controller
 public abstract class AbstractController {
+
+	/** Class logger */
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractController.class);
 
 	@Autowired
 	protected HttpServletRequest request;
@@ -55,5 +69,58 @@ public abstract class AbstractController {
 	 */
 	protected boolean ltIE6() {
 		return new Browser(request).ltIE6();
+	}
+
+	@ExceptionHandler(DisconnectedException.class)
+	public void disconnectedException(Exception ex, HttpServletResponse response) throws IOException {
+		LOG.error(ex.getMessage());
+		setResponse(response, 401, ex.getMessage());
+	}
+
+	@ExceptionHandler(UnauthorizedException.class)
+	public void unauthorizedException(Exception ex, HttpServletResponse response) throws IOException {
+		LOG.error(ex.getMessage());
+		setResponse(response, 403, ex.getMessage());
+	}
+
+	@ExceptionHandler(RequestParameterException.class)
+	public void requestParameterException(Exception ex, HttpServletResponse response) {
+		LOG.error(ex.getMessage(), ex);
+		setResponse(response, 400, ex.getMessage());
+	}
+
+	@ExceptionHandler(EntityNotFoundException.class)
+	public void entityNotFoundException(Exception ex, HttpServletResponse response) {
+		LOG.error(ex.getMessage());
+		setResponse(response, 500, ex.getMessage());
+	}
+
+	@ExceptionHandler(NotImplementedException.class)
+	public void notImplementedException(Exception ex, HttpServletResponse response) {
+		LOG.error(ex.getMessage(), ex);
+		setResponse(response, 501, ex.getMessage());
+	}
+
+	@ExceptionHandler(ResourceNotFoundException.class)
+	public void resourceNotFoundException(Exception ex, HttpServletResponse response) {
+		LOG.error(ex.getMessage());
+		setResponse(response, 404, ex.getMessage());
+	}
+
+	@ExceptionHandler(Exception.class)
+	public void handlerException(Exception ex, HttpServletResponse response) {
+		LOG.error(ex.getMessage(), ex);
+		setResponse(response, 500, ex.getMessage());
+	}
+
+	protected void setResponse(HttpServletResponse response, int status, String message) {
+		response.setStatus(status);
+
+		try {
+			response.getWriter().print(message);
+		}
+		catch (IOException ex) {
+			LOG.error(ex.getMessage(), ex);
+		}
 	}
 }
