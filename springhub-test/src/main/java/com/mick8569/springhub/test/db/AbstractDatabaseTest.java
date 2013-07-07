@@ -120,7 +120,7 @@ public abstract class AbstractDatabaseTest {
 	 * @throws Exception
 	 */
 	public int count(String tableName) throws Exception {
-		return databaseTester.getConnection().getRowCount(tableName);
+		return jdbcTemplate.queryForInt("SELECT COUNT(*) FROM " + tableName);
 	}
 
 	/**
