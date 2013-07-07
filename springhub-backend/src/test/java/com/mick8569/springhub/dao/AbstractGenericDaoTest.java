@@ -91,8 +91,8 @@ public class AbstractGenericDaoTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void test_getReference_notFound() {
-		FooEntity foo = new FooEntity();
 		Mockito.when(entityManager.getReference(FooEntity.class, 1L)).thenThrow(EntityNotFoundException.class);
 		FooEntity result = dao().getReference(1L);
 		Assertions.assertThat(result).isNull();
@@ -291,8 +291,8 @@ public class AbstractGenericDaoTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void test_getSingleEntity_noResultException() {
-		FooEntity foo = new FooEntity();
 		String str = "SELECT x FROM FooEntity x WHERE x.ID = 1";
 
 		Query query = Mockito.mock(Query.class);
