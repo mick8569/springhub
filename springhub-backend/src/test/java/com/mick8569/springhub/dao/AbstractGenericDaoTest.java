@@ -82,31 +82,31 @@ public class AbstractGenericDaoTest {
 	}
 
 	@Test
-        public void test_getReference() {
-                FooEntity foo = new FooEntity();
-                Mockito.when(entityManager.getReference(FooEntity.class, 1L)).thenReturn(foo);
-                FooEntity result = dao().getReference(1L);
-                Assertions.assertThat(result).isNotNull().isEqualTo(foo);
-                Mockito.verify(entityManager).getReference(FooEntity.class, 1L);
-        }
+	public void test_getReference() {
+		FooEntity foo = new FooEntity();
+		Mockito.when(entityManager.getReference(FooEntity.class, 1L)).thenReturn(foo);
+		FooEntity result = dao().getReference(1L);
+		Assertions.assertThat(result).isNotNull().isEqualTo(foo);
+		Mockito.verify(entityManager).getReference(FooEntity.class, 1L);
+	}
 
 	@Test
-        public void test_getReference_notFound() {
-                FooEntity foo = new FooEntity();
-                Mockito.when(entityManager.getReference(FooEntity.class, 1L)).thenThrow(EntityNotFoundException.class);
-                FooEntity result = dao().getReference(1L);
-                Assertions.assertThat(result).isNull();
-                Mockito.verify(entityManager).getReference(FooEntity.class, 1L);
-        }
+	public void test_getReference_notFound() {
+		FooEntity foo = new FooEntity();
+		Mockito.when(entityManager.getReference(FooEntity.class, 1L)).thenThrow(EntityNotFoundException.class);
+		FooEntity result = dao().getReference(1L);
+		Assertions.assertThat(result).isNull();
+		Mockito.verify(entityManager).getReference(FooEntity.class, 1L);
+	}
 
 	@Test
 	public void test_findAll() {
 		List<FooEntity> entities = Arrays.asList(
-			new FooEntity(),
-			new FooEntity()
+				new FooEntity(),
+				new FooEntity()
 		);
 
-		Query query  = Mockito.mock(Query.class);
+		Query query = Mockito.mock(Query.class);
 		Mockito.when(entityManager.createQuery("SELECT x FROM FooEntity x")).thenReturn(query);
 		Mockito.when(query.getResultList()).thenReturn(entities);
 
@@ -118,7 +118,7 @@ public class AbstractGenericDaoTest {
 
 	@Test
 	public void test_count() {
-		Query query  = Mockito.mock(Query.class);
+		Query query = Mockito.mock(Query.class);
 		Mockito.when(entityManager.createQuery("SELECT COUNT(x) FROM FooEntity x")).thenReturn(query);
 		Mockito.when(query.getSingleResult()).thenReturn(2L);
 
@@ -136,7 +136,7 @@ public class AbstractGenericDaoTest {
 		);
 
 		String str = "SELECT x FROM FooEntity x WHERE x.ID = 1";
-		Query query  = Mockito.mock(Query.class);
+		Query query = Mockito.mock(Query.class);
 		Mockito.when(entityManager.createQuery(str)).thenReturn(query);
 		Mockito.when(query.getResultList()).thenReturn(entities);
 
@@ -156,7 +156,7 @@ public class AbstractGenericDaoTest {
 		);
 
 		String str = "SELECT x FROM FooEntity x WHERE x.ID = 1";
-		Query query  = Mockito.mock(Query.class);
+		Query query = Mockito.mock(Query.class);
 		Mockito.when(entityManager.createQuery(str)).thenReturn(query);
 		Mockito.when(query.getResultList()).thenReturn(entities);
 
@@ -179,7 +179,7 @@ public class AbstractGenericDaoTest {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put("id", 1L);
 
-		Query query  = Mockito.mock(Query.class);
+		Query query = Mockito.mock(Query.class);
 		Mockito.when(entityManager.createQuery(str)).thenReturn(query);
 		Mockito.when(query.getResultList()).thenReturn(entities);
 
@@ -202,7 +202,7 @@ public class AbstractGenericDaoTest {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put("id", 1L);
 
-		Query query  = Mockito.mock(Query.class);
+		Query query = Mockito.mock(Query.class);
 		Mockito.when(entityManager.createQuery(str)).thenReturn(query);
 		Mockito.when(query.getResultList()).thenReturn(entities);
 
@@ -219,7 +219,7 @@ public class AbstractGenericDaoTest {
 		FooEntity foo = new FooEntity();
 		String str = "SELECT x FROM FooEntity x WHERE x.ID = 1";
 
-		Query query  = Mockito.mock(Query.class);
+		Query query = Mockito.mock(Query.class);
 		Mockito.when(entityManager.createQuery(str)).thenReturn(query);
 		Mockito.when(query.getSingleResult()).thenReturn(foo);
 
@@ -238,7 +238,7 @@ public class AbstractGenericDaoTest {
 		parameters.put("id", 1L);
 		String str = "SELECT x FROM FooEntity x WHERE x.ID = :id";
 
-		Query query  = Mockito.mock(Query.class);
+		Query query = Mockito.mock(Query.class);
 		Mockito.when(entityManager.createQuery(str)).thenReturn(query);
 		Mockito.when(query.getSingleResult()).thenReturn(foo);
 
@@ -253,7 +253,7 @@ public class AbstractGenericDaoTest {
 	public void test_getCount() {
 		String str = "SELECT COUNT(x) FROM FooEntity x WHERE x.ID = 1";
 
-		Query query  = Mockito.mock(Query.class);
+		Query query = Mockito.mock(Query.class);
 		Mockito.when(entityManager.createQuery(str)).thenReturn(query);
 		Mockito.when(query.getSingleResult()).thenReturn(2L);
 
@@ -270,7 +270,7 @@ public class AbstractGenericDaoTest {
 		parameters.put("id", 1L);
 		String str = "SELECT COUNT(x) FROM FooEntity x WHERE x.ID = :id";
 
-		Query query  = Mockito.mock(Query.class);
+		Query query = Mockito.mock(Query.class);
 		Mockito.when(entityManager.createQuery(str)).thenReturn(query);
 		Mockito.when(query.getSingleResult()).thenReturn(2L);
 
@@ -295,7 +295,7 @@ public class AbstractGenericDaoTest {
 		FooEntity foo = new FooEntity();
 		String str = "SELECT x FROM FooEntity x WHERE x.ID = 1";
 
-		Query query  = Mockito.mock(Query.class);
+		Query query = Mockito.mock(Query.class);
 		Mockito.when(entityManager.createQuery(str)).thenReturn(query);
 		Mockito.when(query.getSingleResult()).thenThrow(NoResultException.class);
 
@@ -304,7 +304,6 @@ public class AbstractGenericDaoTest {
 		Mockito.verify(entityManager).createQuery(str);
 		Mockito.verify(query).getSingleResult();
 	}
-
 
 	private static class FooEntity extends AbstractGenericEntity {
 		@Override
