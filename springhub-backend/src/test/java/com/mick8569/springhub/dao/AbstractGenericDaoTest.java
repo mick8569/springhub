@@ -129,6 +129,16 @@ public class AbstractGenericDaoTest {
 	}
 
 	@Test
+	public void test_count_returnNull() {
+		Query query = Mockito.mock(Query.class);
+		Mockito.when(entityManager.createQuery("SELECT COUNT(x) FROM FooEntity x")).thenReturn(query);
+		Mockito.when(query.getSingleResult()).thenReturn(null);
+
+		long count = dao().count();
+		Assertions.assertThat(count).isEqualTo(0);
+	}
+
+	@Test
 	public void test_getEntityList_singleQuery() {
 		List<FooEntity> entities = Arrays.asList(
 				new FooEntity(),
@@ -142,8 +152,7 @@ public class AbstractGenericDaoTest {
 
 		List<FooEntity> results = dao().getEntityList(str);
 		Assertions.assertThat(results).isNotNull().hasSize(2).isEqualTo(entities);
-		Mockito.verify(entityManager).createQuery(str);
-		Mockito.verify(query).getResultList();
+		Mockito.verify(entityManager).createQuery(str);		Mockito.verify(query).getResultList();
 		Mockito.verify(query, Mockito.never()).setParameter(Mockito.anyString(), Mockito.anyObject());
 		Mockito.verify(query, Mockito.never()).setMaxResults(Mockito.anyInt());
 	}

@@ -156,7 +156,12 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 		sb.append("SELECT COUNT(x) ");
 		sb.append("FROM ").append(type.getSimpleName()).append(" x");
 		Query query = entityManager().createQuery(sb.toString());
-		return (Long) query.getSingleResult();
+
+		Long count = (Long) query.getSingleResult();
+		if (count == null) {
+			count = 0L;
+		}
+		return count;
 	}
 
 	/**
