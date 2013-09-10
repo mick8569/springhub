@@ -1,13 +1,19 @@
 package com.mjeanroy.springhub.filters;
 
-import com.mjeanroy.springhub.commons.web.utils.Browser;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.mjeanroy.springhub.commons.web.utils.Browser;
 
 public class InternetExplorerFilter implements Filter {
 
@@ -19,7 +25,7 @@ public class InternetExplorerFilter implements Filter {
 	public void init(FilterConfig filterConfig) throws ServletException {
 		String pattern = filterConfig.getInitParameter("restPattern");
 		if (StringUtils.isNotBlank(pattern)) {
-			this.restPattern = Pattern.compile(pattern);
+			setRestPattern(pattern);
 		}
 
 		staticPattern = Pattern.compile(
@@ -57,5 +63,13 @@ public class InternetExplorerFilter implements Filter {
 
 	private boolean isStaticPath(String path) {
 		return staticPattern.matcher(path).find();
+	}
+
+	public void setRestPattern(Pattern restPattern) {
+		this.restPattern = restPattern;
+	}
+
+	public void setRestPattern(String restPattern) {
+		this.restPattern = Pattern.compile(restPattern);
 	}
 }
