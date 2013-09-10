@@ -24,6 +24,7 @@ public abstract class AbstractServices<T extends AbstractEntity> {
 	@Inject
 	private GenericDao genericDao;
 
+	@SuppressWarnings("unchecked")
 	public AbstractServices() {
 		this.type = (Class<T>) ReflectionUtils.getGenericType(getClass(), 0);
 	}
