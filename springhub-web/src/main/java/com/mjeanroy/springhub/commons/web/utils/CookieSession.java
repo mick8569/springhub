@@ -11,19 +11,27 @@ public abstract class CookieSession {
 	/** Http Request */
 	private HttpServletRequest request;
 
-	/** Http Response */
+	/** Http Response  */
 	private HttpServletResponse response;
+
+	/** If cookie is visible to http only */
+	private boolean httpOnly;
 
 	/**
 	 * Build http session from http request and response.
 	 *
-	 * @param request  Http request.
+	 * @param request Http request.
 	 * @param response Http response.
 	 */
 	public CookieSession(HttpServletRequest request, HttpServletResponse response) {
+		this(request, response, true);
+	}
+
+	public CookieSession(HttpServletRequest request, HttpServletResponse response, boolean httpOnly) {
 		super();
 		this.request = request;
 		this.response = response;
+		this.httpOnly = httpOnly;
 	}
 
 	/**
@@ -63,7 +71,7 @@ public abstract class CookieSession {
 	/**
 	 * Put new item in session.
 	 *
-	 * @param name  Name of item.
+	 * @param name Name of item.
 	 * @param value Value of item.
 	 */
 	public Cookie put(String name, String value) {
@@ -73,8 +81,8 @@ public abstract class CookieSession {
 	/**
 	 * Put new item in session.
 	 *
-	 * @param name      Name of item.
-	 * @param value     Value of item.
+	 * @param name Name of item.
+	 * @param value Value of item.
 	 * @param permanent True to use a permanent session, aka session will not be clear when browser will close.
 	 */
 	public Cookie put(String name, String value, boolean permanent) {
@@ -82,6 +90,7 @@ public abstract class CookieSession {
 		Cookie cookie = new Cookie(name, encryptedVal);
 		cookie.setPath("/");
 		cookie.setMaxAge(-1);
+		cookie.setHttpOnly(httpOnly);
 		if (permanent) {
 			cookie.setMaxAge(Integer.MAX_VALUE);
 		}
@@ -130,6 +139,16 @@ public abstract class CookieSession {
 		Cookie cookie = new Cookie(name, "");
 		cookie.setMaxAge(0);
 		cookie.setPath("/");
+		cookie.setHttpOnly(httpOnly);
 		response.addCookie(cookie);
+	}
+
+	/**
+	 * Get {@link #httpOnly}
+	 *
+	 * @return {@link #httpOnly}
+	 */
+	public boolean getHttpOnly() {
+		return httpOnly;
 	}
 }

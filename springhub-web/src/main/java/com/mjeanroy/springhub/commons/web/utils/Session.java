@@ -10,7 +10,7 @@ public class Session extends CookieSession {
 	private String secret;
 
 	public Session(HttpServletRequest request, HttpServletResponse response, String salt, String secret) {
-		super(request, response);
+		super(request, response, true);
 		this.salt = salt;
 		this.secret = secret;
 	}

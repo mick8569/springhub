@@ -28,6 +28,7 @@ public class CookieSessionTest {
 		Assertions.assertThat(cookie.getName()).isNotNull().isEqualTo("id");
 		Assertions.assertThat(cookie.getValue()).isNotNull().isEqualTo("ZvnSZ7HTSao9e%2FmyIKPDcw%3D%3D");
 		Assertions.assertThat(cookie.getMaxAge()).isEqualTo(-1);
+		Assertions.assertThat(cookie.isHttpOnly()).isTrue();
 	}
 
 	@Test
@@ -47,6 +48,7 @@ public class CookieSessionTest {
 		Assertions.assertThat(cookie.getName()).isNotNull().isEqualTo("id");
 		Assertions.assertThat(cookie.getValue()).isNotNull().isEqualTo("ZvnSZ7HTSao9e%2FmyIKPDcw%3D%3D");
 		Assertions.assertThat(cookie.getMaxAge()).isEqualTo(Integer.MAX_VALUE);
+		Assertions.assertThat(cookie.isHttpOnly()).isTrue();
 	}
 
 	@Test
@@ -66,6 +68,7 @@ public class CookieSessionTest {
 		Assertions.assertThat(cookie.getName()).isNotNull().isEqualTo("id");
 		Assertions.assertThat(cookie.getValue()).isNotNull().isEqualTo("");
 		Assertions.assertThat(cookie.getMaxAge()).isEqualTo(0);
+		Assertions.assertThat(cookie.isHttpOnly()).isTrue();
 	}
 
 	@Test
