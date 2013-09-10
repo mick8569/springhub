@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.mick8569</groupId>
+	<groupId>com.mjeanroy</groupId>
 	<artifactId>springhub</artifactId>
 	<packaging>pom</packaging>
 	<version>0.0.2-SNAPSHOT</version>
@@ -17,16 +17,16 @@
 		<repository>
 			<id>github</id>
 			<name>GitHub ${project.artifactId} Repository</name>
-			<url>https://raw.github.com/mick8569/${project.artifactId}/mvn-repo</url>
+			<url>https://raw.github.com/mjeanroy/${project.artifactId}/mvn-repo</url>
 		</repository>
 	</distributionManagement>
 
-	<url>https://github.com/mick8569/springhub</url>
+	<url>https://github.com/mjeanroy/springhub</url>
 
 	<scm>
-		<connection>scm:git:git@github.com:mick8569/springhub.git</connection>
-		<developerConnection>scm:git:git@github.com:mick8569/springhub.git</developerConnection>
-		<url>https://github.com/mick8569/springhub</url>
+		<connection>scm:git:git@github.com:mjeanroy/springhub.git</connection>
+		<developerConnection>scm:git:git@github.com:mjeanroy/springhub.git</developerConnection>
+		<url>https://github.com/mjeanroy/springhub</url>
 	  <tag>HEAD</tag>
   </scm>
 
@@ -131,7 +131,7 @@
 					</includes>
 					<repositoryName>springhub</repositoryName>
 					<!-- github repo name -->
-					<repositoryOwner>mick8569</repositoryOwner>
+					<repositoryOwner>mjeanroy</repositoryOwner>
 					<!-- github username  -->
 					<merge>true</merge>
 					<!-- Do not override previous artifacts -->
