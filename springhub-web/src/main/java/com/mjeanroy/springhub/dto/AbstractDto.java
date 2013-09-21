@@ -1,10 +1,10 @@
 package com.mjeanroy.springhub.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.mjeanroy.springhub.commons.web.json.Json;
 import com.mjeanroy.springhub.models.AbstractModel;
 import org.apache.commons.beanutils.BeanMap;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import java.io.Serializable;
 import java.util.Map;

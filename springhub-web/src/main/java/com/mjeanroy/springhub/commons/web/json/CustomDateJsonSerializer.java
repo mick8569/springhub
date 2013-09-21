@@ -1,10 +1,9 @@
 package com.mjeanroy.springhub.commons.web.json;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.mjeanroy.springhub.commons.dates.DateSerialization;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.JsonSerializer;
-import org.codehaus.jackson.map.SerializerProvider;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -14,7 +13,7 @@ import java.util.Date;
 public class CustomDateJsonSerializer extends JsonSerializer<Date> {
 
 	@Override
-	public void serialize(Date date, JsonGenerator gen, SerializerProvider provider) throws IOException, JsonProcessingException {
+	public void serialize(Date date, JsonGenerator gen, SerializerProvider provider) throws IOException {
 		String formattedDate = DateSerialization.serializeDateTime(date, "yyyy-MM-dd");
 		gen.writeString(formattedDate);
 	}

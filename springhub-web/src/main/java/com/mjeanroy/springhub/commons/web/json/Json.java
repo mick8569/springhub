@@ -1,8 +1,6 @@
 package com.mjeanroy.springhub.commons.web.json;
 
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,10 +18,8 @@ public abstract class Json {
 	 */
 	public static <T> T fromJson(String str, Class<T> result) {
 		try {
-			JsonFactory jsonFactory = new JsonFactory();
-			JsonParser jp = jsonFactory.createJsonParser(str);
 			ObjectMapper mapper = new ObjectMapper();
-			return mapper.readValue(jp, result);
+			return mapper.readValue(str, result);
 		} catch (Exception ex) {
 			LOG.error(ex.getMessage(), ex);
 			return null;

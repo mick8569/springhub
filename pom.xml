@@ -72,9 +72,9 @@
 		<dozer.version>5.4.0</dozer.version>
 
 		<!-- Jackson (JSON Serialization) -->
-		<jackson.version>1.9.5</jackson.version>
-		<jackson-mapper-asl.version>${jackson.version}</jackson-mapper-asl.version>
-		<jackson-core-asl.version>${jackson.version}</jackson-core-asl.version>
+		<jackson.version>2.2.3</jackson.version>
+		<jackson-core.version>${jackson.version}</jackson-core.version>
+		<jackson-databind.version>${jackson.version}</jackson-databind.version>
 
 		<!-- Servlet 3.0 -->
 		<geronimo-servlet_3.0_spec.version>1.0</geronimo-servlet_3.0_spec.version>
