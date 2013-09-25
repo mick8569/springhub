@@ -1,25 +1,34 @@
 package com.mjeanroy.springhub.test.integration;
 
-import com.mjeanroy.springhub.commons.context.SpringApplicationContext;
-import com.mjeanroy.springhub.test.db.AbstractDatabaseTest;
-import org.junit.*;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.webapp.WebAppContext;
+import javax.sql.DataSource;
+
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.webapp.WebAppContext;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
+import com.mjeanroy.springhub.commons.context.SpringApplicationContext;
+import com.mjeanroy.springhub.test.db.AbstractDatabaseTest;
 
 @Ignore
 public abstract class AbstractIntegrationTest extends AbstractDatabaseTest {
 
-	/** Port of test server */
+	/**
+	 * Port of test server
+	 */
 	public static final int PORT = 8888;
 
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractIntegrationTest.class);
 
-	/** Jetty Server */
+	/**
+	 * Jetty Server
+	 */
 	public static Server server;
 
 	@BeforeClass
@@ -66,7 +75,7 @@ public abstract class AbstractIntegrationTest extends AbstractDatabaseTest {
 		server.join();
 
 		if ((server != null) && (server.getHandlers() != null)) {
-			for (org.mortbay.jetty.Handler handler : server.getHandlers()) {
+			for (org.eclipse.jetty.server.Handler handler : server.getHandlers()) {
 				handler.stop();
 				handler.destroy();
 			}
