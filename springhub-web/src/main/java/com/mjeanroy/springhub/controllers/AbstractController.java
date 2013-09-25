@@ -72,37 +72,37 @@ public abstract class AbstractController {
 	}
 
 	@ExceptionHandler(DisconnectedException.class)
-	public void disconnectedException(Exception ex, HttpServletResponse response) throws IOException {
+	public void disconnectedException(DisconnectedException ex, HttpServletResponse response) throws IOException {
 		LOG.error(ex.getMessage());
 		setResponse(response, 401, ex.getMessage());
 	}
 
 	@ExceptionHandler(UnauthorizedException.class)
-	public void unauthorizedException(Exception ex, HttpServletResponse response) throws IOException {
+	public void unauthorizedException(UnauthorizedException ex, HttpServletResponse response) throws IOException {
 		LOG.error(ex.getMessage());
 		setResponse(response, 403, ex.getMessage());
 	}
 
 	@ExceptionHandler(RequestParameterException.class)
-	public void requestParameterException(Exception ex, HttpServletResponse response) {
+	public void requestParameterException(RequestParameterException ex, HttpServletResponse response) {
 		LOG.error(ex.getMessage(), ex);
 		setResponse(response, 400, ex.getMessage());
 	}
 
 	@ExceptionHandler(EntityNotFoundException.class)
-	public void entityNotFoundException(Exception ex, HttpServletResponse response) {
+	public void entityNotFoundException(EntityNotFoundException ex, HttpServletResponse response) {
 		LOG.error(ex.getMessage());
 		setResponse(response, 500, ex.getMessage());
 	}
 
 	@ExceptionHandler(NotImplementedException.class)
-	public void notImplementedException(Exception ex, HttpServletResponse response) {
+	public void notImplementedException(NotImplementedException ex, HttpServletResponse response) {
 		LOG.error(ex.getMessage(), ex);
 		setResponse(response, 501, ex.getMessage());
 	}
 
 	@ExceptionHandler(ResourceNotFoundException.class)
-	public void resourceNotFoundException(Exception ex, HttpServletResponse response) {
+	public void resourceNotFoundException(ResourceNotFoundException ex, HttpServletResponse response) {
 		LOG.error(ex.getMessage());
 		setResponse(response, 404, ex.getMessage());
 	}
