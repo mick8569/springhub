@@ -44,7 +44,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
 				}
 				else {
 					LOG.info("Return unauthorized status");
-					response.setStatus(403);
+					response.setStatus(401);
 				}
 				return false;
 			}

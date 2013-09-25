@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 public class SecurityInterceptorTest {
 
 	@Test
-	public void testSecurityInterceptor_shouldThrow403() throws Exception {
+	public void testSecurityInterceptor_shouldThrow401() throws Exception {
 		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
 		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
 		HandlerMethod handler = Mockito.mock(HandlerMethod.class);
@@ -28,7 +28,7 @@ public class SecurityInterceptorTest {
 		boolean result = interceptor.preHandle(request, response, handler);
 
 		Assertions.assertThat(result).isFalse();
-		Mockito.verify(response).setStatus(403);
+		Mockito.verify(response).setStatus(401);
 	}
 
 	@Test
