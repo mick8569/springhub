@@ -87,7 +87,8 @@
 		<jsonassert.version>1.1.0</jsonassert.version>
 		<fest-assert-core.version>2.0M10</fest-assert-core.version>
 		<mockito.version>1.9.5</mockito.version>
-		<jetty-embedded.version>6.1.26</jetty-embedded.version>
+
+		<jetty.version>8.1.5.v20120716</jetty.version>
 	</properties>
 
 	<repositories>
