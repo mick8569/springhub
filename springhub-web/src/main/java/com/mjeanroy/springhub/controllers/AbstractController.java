@@ -117,12 +117,6 @@ public abstract class AbstractController {
 		setResponse(response, 400, exception.getMessage());
 	}
 
-	@ExceptionHandler(Exception.class)
-	public void handlerException(Exception ex, HttpServletResponse response) {
-		LOG.error(ex.getMessage(), ex);
-		setResponse(response, 500, ex.getMessage());
-	}
-
 	protected void setResponse(HttpServletResponse response, int status, String message) {
 		response.setStatus(status);
 
