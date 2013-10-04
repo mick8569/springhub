@@ -16,7 +16,7 @@ public abstract class AbstractEntity extends AbstractGenericEntity {
 	/** Id of entity */
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "ID", nullable = false, precision = 22, scale = 0)
+	@Column(nullable = false, precision = 22, scale = 0)
 	protected Long id;
 
 	public AbstractEntity() {
