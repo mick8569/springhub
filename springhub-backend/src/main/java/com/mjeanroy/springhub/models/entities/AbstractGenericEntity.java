@@ -17,7 +17,7 @@ public abstract class AbstractGenericEntity extends AbstractModel {
 
 	/** Version (lock optimistic) */
 	@Version
-	protected long version;
+	protected int version;
 
 	/**
 	 * Get identifier of entity.
@@ -36,7 +36,7 @@ public abstract class AbstractGenericEntity extends AbstractModel {
 	 *
 	 * @return {@link #version}
 	 */
-	public long getVersion() {
+	public int getVersion() {
 		return version;
 	}
 
@@ -45,7 +45,7 @@ public abstract class AbstractGenericEntity extends AbstractModel {
 	 *
 	 * @param version
 	 */
-	public void setVersion(long version) {
+	public void setVersion(int version) {
 		this.version = version;
 	}
 
