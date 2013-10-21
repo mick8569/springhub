@@ -8,12 +8,16 @@ public abstract class AbstractVO extends AbstractModel {
 		super();
 	}
 
-	public Long getId() {
-		return null;
+	public boolean isNew() {
+		return true;
 	}
 
 	@Override
 	public Long modelId() {
 		return getId();
+	}
+
+	public Long getId() {
+		return null;
 	}
 }

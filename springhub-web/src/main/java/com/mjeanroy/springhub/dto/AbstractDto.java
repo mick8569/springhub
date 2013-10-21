@@ -1,5 +1,6 @@
 package com.mjeanroy.springhub.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.mjeanroy.springhub.commons.web.json.Json;
@@ -48,6 +49,16 @@ public class AbstractDto<MODEL extends AbstractModel> implements Serializable {
 	 */
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	/**
+	 * Check if dto is a new object or obtained from an existing model.
+	 *
+	 * @return True if dto is new, false otherwise.
+	 */
+	@JsonIgnore
+	public boolean isNew() {
+		return id == null || id.equals(0L);
 	}
 
 	/**
