@@ -8,9 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.mjeanroy.springhub.commons.web.utils.Browser;
 import com.mjeanroy.springhub.exceptions.DisconnectedException;
 import com.mjeanroy.springhub.exceptions.EntityNotFoundException;
@@ -114,6 +116,18 @@ public abstract class AbstractController {
 	@ExceptionHandler(value = {MethodArgumentNotValidException.class})
 	public void methodArgumentNotValid(MethodArgumentNotValidException exception, HttpServletResponse response) throws IOException {
 		MethodArgumentNotValidException e = (MethodArgumentNotValidException) exception;
+		setResponse(response, 400, exception.getMessage());
+	}
+
+	@ExceptionHandler(value = {BindException.class})
+	public void bindException(BindException exception, HttpServletResponse response) throws IOException {
+		BindException e = (BindException) exception;
+		setResponse(response, 400, exception.getMessage());
+	}
+
+	@ExceptionHandler(value = {InvalidFormatException.class})
+	public void invalidFormatException(InvalidFormatException exception, HttpServletResponse response) throws IOException {
+		InvalidFormatException e = (InvalidFormatException) exception;
 		setResponse(response, 400, exception.getMessage());
 	}
 
