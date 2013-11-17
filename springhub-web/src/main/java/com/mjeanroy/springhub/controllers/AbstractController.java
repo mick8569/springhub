@@ -1,9 +1,14 @@
 package com.mjeanroy.springhub.controllers;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.mjeanroy.springhub.commons.web.utils.Browser;
+import com.mjeanroy.springhub.exceptions.DisconnectedException;
+import com.mjeanroy.springhub.exceptions.EmailUniqueException;
+import com.mjeanroy.springhub.exceptions.EntityNotFoundException;
+import com.mjeanroy.springhub.exceptions.NotImplementedException;
+import com.mjeanroy.springhub.exceptions.RequestParameterException;
+import com.mjeanroy.springhub.exceptions.ResourceNotFoundException;
+import com.mjeanroy.springhub.exceptions.UnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,14 +17,9 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.mjeanroy.springhub.commons.web.utils.Browser;
-import com.mjeanroy.springhub.exceptions.DisconnectedException;
-import com.mjeanroy.springhub.exceptions.EntityNotFoundException;
-import com.mjeanroy.springhub.exceptions.NotImplementedException;
-import com.mjeanroy.springhub.exceptions.RequestParameterException;
-import com.mjeanroy.springhub.exceptions.ResourceNotFoundException;
-import com.mjeanroy.springhub.exceptions.UnauthorizedException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @Controller
 public abstract class AbstractController {
@@ -114,21 +114,27 @@ public abstract class AbstractController {
 	}
 
 	@ExceptionHandler(value = {MethodArgumentNotValidException.class})
-	public void methodArgumentNotValid(MethodArgumentNotValidException exception, HttpServletResponse response) throws IOException {
-		MethodArgumentNotValidException e = (MethodArgumentNotValidException) exception;
-		setResponse(response, 400, exception.getMessage());
+	public void methodArgumentNotValid(MethodArgumentNotValidException ex, HttpServletResponse response) throws IOException {
+		LOG.error(ex.getMessage());
+		setResponse(response, 400, ex.getMessage());
 	}
 
 	@ExceptionHandler(value = {BindException.class})
-	public void bindException(BindException exception, HttpServletResponse response) throws IOException {
-		BindException e = (BindException) exception;
-		setResponse(response, 400, exception.getMessage());
+	public void bindException(BindException ex, HttpServletResponse response) throws IOException {
+		LOG.error(ex.getMessage());
+		setResponse(response, 400, ex.getMessage());
 	}
 
 	@ExceptionHandler(value = {InvalidFormatException.class})
-	public void invalidFormatException(InvalidFormatException exception, HttpServletResponse response) throws IOException {
-		InvalidFormatException e = (InvalidFormatException) exception;
-		setResponse(response, 400, exception.getMessage());
+	public void invalidFormatException(InvalidFormatException ex, HttpServletResponse response) throws IOException {
+		LOG.error(ex.getMessage());
+		setResponse(response, 400, ex.getMessage());
+	}
+
+	@ExceptionHandler(value = {EmailUniqueException.class})
+	public void emailUniqueException(EmailUniqueException ex, HttpServletResponse response) throws IOException {
+		LOG.error(ex.getMessage());
+		setResponse(response, 400, ex.getMessage());
 	}
 
 	protected void setResponse(HttpServletResponse response, int status, String message) {
