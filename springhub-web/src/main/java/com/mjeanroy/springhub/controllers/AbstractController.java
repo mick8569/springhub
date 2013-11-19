@@ -1,5 +1,26 @@
 package com.mjeanroy.springhub.controllers;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.mjeanroy.springhub.commons.web.utils.Browser;
 import com.mjeanroy.springhub.exceptions.DisconnectedException;
@@ -9,17 +30,6 @@ import com.mjeanroy.springhub.exceptions.NotImplementedException;
 import com.mjeanroy.springhub.exceptions.RequestParameterException;
 import com.mjeanroy.springhub.exceptions.ResourceNotFoundException;
 import com.mjeanroy.springhub.exceptions.UnauthorizedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 @Controller
 public abstract class AbstractController {
@@ -114,15 +124,19 @@ public abstract class AbstractController {
 	}
 
 	@ExceptionHandler(value = {MethodArgumentNotValidException.class})
-	public void methodArgumentNotValid(MethodArgumentNotValidException ex, HttpServletResponse response) throws IOException {
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	public Map<String, String> methodArgumentNotValid(MethodArgumentNotValidException ex) throws IOException {
 		LOG.error(ex.getMessage());
-		setResponse(response, 400, ex.getMessage());
+		return bindingResultsToErrors(ex.getBindingResult());
 	}
 
 	@ExceptionHandler(value = {BindException.class})
-	public void bindException(BindException ex, HttpServletResponse response) throws IOException {
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	public Map<String, String> bindException(BindException ex, HttpServletResponse response) throws IOException {
 		LOG.error(ex.getMessage());
-		setResponse(response, 400, ex.getMessage());
+		return bindingResultsToErrors(ex.getBindingResult());
 	}
 
 	@ExceptionHandler(value = {InvalidFormatException.class})
@@ -132,9 +146,25 @@ public abstract class AbstractController {
 	}
 
 	@ExceptionHandler(value = {EmailUniqueException.class})
-	public void emailUniqueException(EmailUniqueException ex, HttpServletResponse response) throws IOException {
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	public Map<String, String> emailUniqueException(EmailUniqueException ex) throws IOException {
 		LOG.error(ex.getMessage());
-		setResponse(response, 400, ex.getMessage());
+
+		Map<String, String> errors = new HashMap<String, String>();
+		errors.put("email", ex.getMessage());
+		return errors;
+	}
+
+	private Map<String, String> bindingResultsToErrors(BindingResult bindingResult) {
+		Map<String, String> errors = new HashMap<String, String>();
+		List<FieldError> fieldErrors = bindingResult.getFieldErrors();
+		for (FieldError fieldError : fieldErrors) {
+			String objectName = fieldError.getField();
+			String defaultMessage = fieldError.getDefaultMessage();
+			errors.put(objectName, defaultMessage);
+		}
+		return errors;
 	}
 
 	protected void setResponse(HttpServletResponse response, int status, String message) {
