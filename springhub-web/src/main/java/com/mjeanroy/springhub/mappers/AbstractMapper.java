@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto<MODEL>> {
+public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractMapper.class);
 
@@ -33,6 +33,7 @@ public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto
 	@Inject
 	private Mapper mapper;
 
+	@SuppressWarnings("unchecked")
 	public AbstractMapper() {
 		super();
 		this.modelClass = (Class<MODEL>) ReflectionUtils.getGenericType(getClass(), 0);
@@ -103,6 +104,7 @@ public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto
 	 * @param dto DTO to convert.
 	 * @return Converted entity.
 	 */
+	@SuppressWarnings("unchecked")
 	protected MODEL createEntity(DTO dto) {
 		MODEL model = null;
 
