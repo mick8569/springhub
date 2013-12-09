@@ -9,7 +9,7 @@ public abstract class AbstractVO extends AbstractModel {
 	}
 
 	public boolean isNew() {
-		return true;
+		return getId() != null && getId() > 0;
 	}
 
 	@Override
