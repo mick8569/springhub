@@ -3,6 +3,8 @@ package com.mjeanroy.springhub.dao;
 import com.mjeanroy.springhub.commons.reflections.ReflectionUtils;
 import com.mjeanroy.springhub.models.entities.AbstractGenericEntity;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -55,6 +57,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 *
 	 * @param o Entity to persist.
 	 */
+	@Transactional(readOnly = false, propagation = Propagation.REQUIRED)
 	public void persist(T o) {
 		entityManager().persist(o);
 	}
@@ -65,6 +68,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 * @param o Entity to merge.
 	 * @return Merged entity.
 	 */
+	@Transactional(readOnly = false, propagation = Propagation.REQUIRED)
 	public T merge(T o) {
 		return entityManager().merge(o);
 	}
@@ -74,6 +78,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 *
 	 * @param o Entity to remove.
 	 */
+	@Transactional(readOnly = false, propagation = Propagation.REQUIRED)
 	public void remove(T o) {
 		entityManager().remove(o);
 	}
