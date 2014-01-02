@@ -1,5 +1,14 @@
 package com.mjeanroy.springhub.test.db;
 
+import javax.sql.DataSource;
+import java.io.File;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import org.apache.commons.io.FileUtils;
 import org.dbunit.DataSourceDatabaseTester;
 import org.dbunit.IDatabaseTester;
@@ -15,16 +24,10 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
-import javax.sql.DataSource;
-import java.io.File;
-import java.net.URI;
-import java.net.URL;
-import java.util.*;
-
 public abstract class AbstractDatabaseTest {
 
 	/** Class logger */
-	private static final Logger LOG = LoggerFactory.getLogger(AbstractDatabaseTest.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractDatabaseTest.class);
 
 	/** DBUnit database tester handler */
 	protected static IDatabaseTester databaseTester;
@@ -49,7 +52,7 @@ public abstract class AbstractDatabaseTest {
 	 */
 	protected static void stopHsqlDb() throws Exception {
 		if (databaseTester != null) {
-			LOG.info("Stop in memory database");
+			log.info("Stop in memory database");
 
 			databaseTester.onTearDown();
 			databaseTester.getConnection().close();
@@ -62,23 +65,22 @@ public abstract class AbstractDatabaseTest {
 	}
 
 	/**
-	 * Path (relative to classpath) where dbunit datasets are stored.
+	 * Path (relative to classpath) where dbunit dataset are stored.
 	 *
-	 * @return
+	 * @return Default path for dbunit dataset.
 	 */
 	public String pathDbunitDatasets() {
 		return "/dbunit/datasets/";
 	}
 
 	/**
-	 * Start in-memory database and load all datasets.<br>
-	 * If database was already initialized, it will not be initialized twice.
+	 * Start in-memory database and load all datasets.<br> If database was already initialized, it will not be initialized twice.
 	 *
 	 * @throws Exception
 	 */
 	protected void startHsqlDb() throws Exception {
 		if (!initialized) {
-			LOG.info("Start in-memory database");
+			log.info("Start in-memory database");
 
 			// Initialize connection to tests database
 			databaseTester = new DataSourceDatabaseTester(datasource);
@@ -93,12 +95,12 @@ public abstract class AbstractDatabaseTest {
 			for (int i = 0; i < xmlDatasets.length; i++) {
 				String nameDataset = xmlDatasets[i];
 
-				LOG.debug("Load dataset : " + nameDataset);
+				log.debug("Load dataset : " + nameDataset);
 				FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
 				builder.setColumnSensing(true);
 				IDataSet dataSet = builder.build(AbstractDatabaseTest.class.getResourceAsStream(pathDbunitDatasets() + nameDataset));
 
-				LOG.debug("Replace null values in dataset : " + nameDataset);
+				log.debug("Replace null values in dataset : " + nameDataset);
 				ReplacementDataSet dataSetReplacement = new ReplacementDataSet(dataSet);
 				dataSetReplacement.addReplacementObject("[NULL]", null);
 
@@ -117,10 +119,24 @@ public abstract class AbstractDatabaseTest {
 	 *
 	 * @param tableName Table name.
 	 * @return Number of rows in table.
+	 *
 	 * @throws Exception
 	 */
 	public int count(String tableName) throws Exception {
-		return jdbcTemplate.queryForInt("SELECT COUNT(*) FROM " + tableName);
+		return countSql("SELECT COUNT(*) FROM " + tableName);
+	}
+
+	/**
+	 * Count number of rows in a table.
+	 *
+	 * @param sql SQL query to execute
+	 * @return Number of rows in table.
+	 *
+	 * @throws Exception
+	 */
+	public int countSql(String sql) throws Exception {
+		Integer count = query(sql, Integer.class);
+		return count == null ? 0 : count;
 	}
 
 	/**
@@ -134,9 +150,39 @@ public abstract class AbstractDatabaseTest {
 	public <T> T query(String sql, RowMapper<T> mapper) {
 		try {
 			return jdbcTemplate.queryForObject(sql, mapper);
-		} catch (EmptyResultDataAccessException ex) {
+		}
+		catch (EmptyResultDataAccessException ex) {
 			return null;
 		}
+	}
+
+	/**
+	 * Query database.
+	 *
+	 * @param sql   SQL Query.
+	 * @param klass Class of returned object.
+	 * @param <T>   Type of object to return.
+	 * @return Object, null if object cannot be found.
+	 */
+	public <T> T query(String sql, Class<T> klass) {
+		try {
+			return jdbcTemplate.queryForObject(sql, klass);
+		}
+		catch (EmptyResultDataAccessException ex) {
+			return null;
+		}
+	}
+
+	/**
+	 * Query database and return result list.
+	 *
+	 * @param sql    SQL Query.
+	 * @param mapper Row mapper.
+	 * @param <T>    Type of object to return.
+	 * @return Result list.
+	 */
+	public <T> List<T> queryList(String sql, RowMapper<T> mapper) {
+		return jdbcTemplate.query(sql, mapper);
 	}
 
 	/**
