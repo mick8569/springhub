@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 public abstract class Json {
 
 	/** Class logger */
-	private static final Logger LOG = LoggerFactory.getLogger(Json.class);
+	private static final Logger log = LoggerFactory.getLogger(Json.class);
 
 	/**
 	 * Get object from JSON stream.
@@ -21,7 +21,7 @@ public abstract class Json {
 			ObjectMapper mapper = new ObjectMapper();
 			return mapper.readValue(str, result);
 		} catch (Exception ex) {
-			LOG.error(ex.getMessage(), ex);
+			log.error(ex.getMessage(), ex);
 			return null;
 		}
 	}
@@ -37,7 +37,7 @@ public abstract class Json {
 			ObjectMapper mapper = new ObjectMapper();
 			return mapper.writeValueAsString(from);
 		} catch (Exception ex) {
-			LOG.error(ex.getMessage(), ex);
+			log.error(ex.getMessage(), ex);
 			return null;
 		}
 	}

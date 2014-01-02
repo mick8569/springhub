@@ -12,29 +12,29 @@ import javax.persistence.EntityNotFoundException;
 public class GenericDao extends AbstractDao<AbstractEntity> {
 
 	/** Class logger */
-	private static final Logger LOG = LoggerFactory.getLogger(GenericDao.class);
+	private static final Logger log = LoggerFactory.getLogger(GenericDao.class);
 
 	@Override
 	public AbstractEntity find(Long id) {
-		LOG.error("You have to specified entity class in generic dao");
+		log.error("You have to specified entity class in generic dao");
 		throw new NotImplementedException("You have to specified entity class in generic dao");
 	}
 
 	@Override
 	public List<AbstractEntity> findAll() {
-		LOG.error("You have to specified entity class in generic dao");
+		log.error("You have to specified entity class in generic dao");
 		throw new NotImplementedException("You have to specified entity class in generic dao");
 	}
 
 	@Override
 	public long count() {
-		LOG.error("You have to specified entity class in generic dao");
+		log.error("You have to specified entity class in generic dao");
 		throw new NotImplementedException("You have to specified entity class in generic dao");
 	}
 
 	@Override
 	public AbstractEntity getReference(Long id) {
-		LOG.error("You have to specified entity class in generic dao");
+		log.error("You have to specified entity class in generic dao");
 		throw new NotImplementedException("You have to specified entity class in generic dao");
 	}
 

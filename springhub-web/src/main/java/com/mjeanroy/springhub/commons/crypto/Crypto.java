@@ -17,7 +17,7 @@ import java.security.SecureRandom;
 public abstract class Crypto {
 
 	/** Class logger */
-	private static final Logger LOG = LoggerFactory.getLogger(Crypto.class);
+	private static final Logger log = LoggerFactory.getLogger(Crypto.class);
 
 	/** MD5 Code */
 	private static final String MD5 = "MD5";
@@ -63,7 +63,7 @@ public abstract class Crypto {
 			byte[] encVal = c.doFinal(data.getBytes());
 			return new String(Base64.encodeBase64(encVal));
 		} catch (Exception ex) {
-			LOG.error(ex.getMessage(), ex);
+			log.error(ex.getMessage(), ex);
 			return data;
 		}
 	}
@@ -91,7 +91,7 @@ public abstract class Crypto {
 		try {
 			return URLEncoder.encode(Crypto.encryptAES(data, secret), "UTF-8");
 		} catch (Exception ex) {
-			LOG.error(ex.getMessage(), ex);
+			log.error(ex.getMessage(), ex);
 			return data;
 		}
 	}
@@ -124,7 +124,7 @@ public abstract class Crypto {
 			byte[] decValue = c.doFinal(decodedValue);
 			return new String(decValue);
 		} catch (Exception ex) {
-			LOG.error(ex.getMessage(), ex);
+			log.error(ex.getMessage(), ex);
 			return encryptedData;
 		}
 	}
@@ -170,7 +170,7 @@ public abstract class Crypto {
 			}
 			return sb.toString();
 		} catch (NoSuchAlgorithmException ex) {
-			LOG.error(ex.getMessage(), ex);
+			log.error(ex.getMessage(), ex);
 			return null;
 		}
 	}

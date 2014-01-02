@@ -19,7 +19,7 @@ import java.util.List;
 @Component
 public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(AbstractMapper.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractMapper.class);
 
 	/** Model's class */
 	private Class<MODEL> modelClass;
@@ -114,10 +114,10 @@ public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto
 			try {
 				model = this.modelClass.newInstance();
 			} catch (InstantiationException ex) {
-				LOG.error(ex.getMessage(), ex);
+				log.error(ex.getMessage(), ex);
 				return null;
 			} catch (IllegalAccessException ex) {
-				LOG.error(ex.getMessage(), ex);
+				log.error(ex.getMessage(), ex);
 				return null;
 			}
 		}
