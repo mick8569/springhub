@@ -1,12 +1,12 @@
 package com.mjeanroy.springhub.test.db;
 
+import static java.util.Collections.sort;
+
 import javax.sql.DataSource;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -23,6 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+
+import com.mjeanroy.springhub.test.exceptions.DBUnitDataSetException;
+import com.mjeanroy.springhub.test.exceptions.InMemoryDatabaseException;
 
 public abstract class AbstractDatabaseTest {
 
@@ -78,40 +81,57 @@ public abstract class AbstractDatabaseTest {
 	 *
 	 * @throws Exception
 	 */
-	protected void startHsqlDb() throws Exception {
+	protected void startHsqlDb() {
 		if (!initialized) {
-			log.info("Start in-memory database");
+			try {
+				log.info("Start in-memory database");
 
-			// Initialize connection to tests database
-			databaseTester = new DataSourceDatabaseTester(datasource);
-			databaseDatasource = datasource;
+				// Initialize connection to tests database
+				databaseTester = buildDatabaseTester(datasource);
+				databaseDatasource = datasource;
 
-			databaseTester.setSetUpOperation(DatabaseOperation.CLEAN_INSERT);
-			databaseTester.setTearDownOperation(DatabaseOperation.CLOSE_CONNECTION(DatabaseOperation.DELETE_ALL));
+				databaseTester.setSetUpOperation(DatabaseOperation.CLEAN_INSERT);
+				databaseTester.setTearDownOperation(DatabaseOperation.CLOSE_CONNECTION(DatabaseOperation.DELETE_ALL));
 
-			// Load datasets
-			String[] xmlDatasets = getDataSetFilename();
-			IDataSet[] datasets = new IDataSet[xmlDatasets.length];
-			for (int i = 0; i < xmlDatasets.length; i++) {
-				String nameDataset = xmlDatasets[i];
+				// Load datasets
+				String[] xmlDatasets = getDataSetFilename();
+				IDataSet[] datasets = new IDataSet[xmlDatasets.length];
+				for (int i = 0; i < xmlDatasets.length; i++) {
+					String nameDataset = xmlDatasets[i];
 
-				log.debug("Load dataset : " + nameDataset);
-				FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
-				builder.setColumnSensing(true);
-				IDataSet dataSet = builder.build(AbstractDatabaseTest.class.getResourceAsStream(pathDbunitDatasets() + nameDataset));
+					log.debug("Load dataset : " + nameDataset);
+					FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
+					builder.setColumnSensing(true);
+					IDataSet dataSet = builder.build(AbstractDatabaseTest.class.getResourceAsStream(pathDbunitDatasets() + nameDataset));
 
-				log.debug("Replace null values in dataset : " + nameDataset);
-				ReplacementDataSet dataSetReplacement = new ReplacementDataSet(dataSet);
-				dataSetReplacement.addReplacementObject("[NULL]", null);
+					log.debug("Replace null values in dataset : " + nameDataset);
+					ReplacementDataSet dataSetReplacement = new ReplacementDataSet(dataSet);
+					dataSetReplacement.addReplacementObject("[NULL]", null);
 
-				datasets[i] = dataSetReplacement;
+					datasets[i] = dataSetReplacement;
+				}
+
+				databaseTester.setDataSet(new CompositeDataSet(datasets));
+				databaseTester.onSetup();
+
+				initialized = true;
 			}
-
-			databaseTester.setDataSet(new CompositeDataSet(datasets));
-			databaseTester.onSetup();
-
-			initialized = true;
+			catch (Exception ex) {
+				log.error(ex.getMessage(), ex);
+				throw new InMemoryDatabaseException(ex);
+			}
 		}
+	}
+
+	/**
+	 * Build DBUnit database tester to load during in memory database initialization.
+	 * Visible for tests.
+	 *
+	 * @param datasource Datasource to use.
+	 * @return Database tester.
+	 */
+	protected IDatabaseTester buildDatabaseTester(DataSource datasource) {
+		return new DataSourceDatabaseTester(datasource);
 	}
 
 	/**
@@ -119,10 +139,8 @@ public abstract class AbstractDatabaseTest {
 	 *
 	 * @param tableName Table name.
 	 * @return Number of rows in table.
-	 *
-	 * @throws Exception
 	 */
-	public int count(String tableName) throws Exception {
+	public int count(String tableName) {
 		return countSql("SELECT COUNT(*) FROM " + tableName);
 	}
 
@@ -131,10 +149,9 @@ public abstract class AbstractDatabaseTest {
 	 *
 	 * @param sql SQL query to execute
 	 * @return Number of rows in table.
-	 *
-	 * @throws Exception
 	 */
-	public int countSql(String sql) throws Exception {
+	public int countSql(String sql) {
+		log.debug("Execute query : {}", sql);
 		Integer count = query(sql, Integer.class);
 		return count == null ? 0 : count;
 	}
@@ -190,28 +207,37 @@ public abstract class AbstractDatabaseTest {
 	 *
 	 * @return Array of all datasets' names.
 	 */
-	protected String[] getDataSetFilename() throws Exception {
-		URL url = getClass().getResource(pathDbunitDatasets());
-		URI uri = url.toURI();
-		File directory = (new File(uri));
+	protected String[] getDataSetFilename() {
+		try {
+			String path = pathDbunitDatasets();
+			log.info("Load dbunit dataset from {}", path);
 
-		List<File> files = new ArrayList<File>(FileUtils.listFiles(directory, new String[]{"xml"}, false));
+			URL url = getClass().getResource(pathDbunitDatasets());
+			URI uri = url.toURI();
 
-		// Order by name
-		Collections.sort(files, new Comparator<File>() {
-			@Override
-			public int compare(File o1, File o2) {
-				return o1.getName().compareTo(o2.getName());
+			File directory = (new File(uri));
+
+			log.debug("List files in directory {}", directory.getAbsolutePath());
+			List<File> files = new ArrayList<File>(FileUtils.listFiles(directory, new String[]{"xml"}, false));
+
+			// Sort by name
+			log.debug("Sort files by name");
+			sort(files);
+
+			log.info("DBUnit dataset : {}", files);
+
+			String[] results = new String[files.size()];
+			int i = 0;
+			for (File file : files) {
+				results[i] = file.getName();
+				i++;
 			}
-		});
 
-		String[] results = new String[files.size()];
-		int i = 0;
-		for (File file : files) {
-			results[i] = file.getName();
-			i++;
+			return results;
 		}
-
-		return results;
+		catch (Exception ex) {
+			log.error(ex.getMessage(), ex);
+			throw new DBUnitDataSetException(ex);
+		}
 	}
 }
