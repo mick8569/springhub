@@ -15,7 +15,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -34,10 +33,8 @@ import com.mjeanroy.springhub.exceptions.UnauthorizedException;
 @Controller
 public abstract class AbstractController {
 
-	/**
-	 * Class logger
-	 */
-	private static final Logger LOG = LoggerFactory.getLogger(AbstractController.class);
+	/** Class logger */
+	private static final Logger log = LoggerFactory.getLogger(AbstractController.class);
 
 	@Autowired
 	protected HttpServletRequest request;
@@ -89,37 +86,37 @@ public abstract class AbstractController {
 
 	@ExceptionHandler(DisconnectedException.class)
 	public void disconnectedException(DisconnectedException ex, HttpServletResponse response) throws IOException {
-		LOG.error(ex.getMessage());
+		log.error(ex.getMessage());
 		setResponse(response, 401, ex.getMessage());
 	}
 
 	@ExceptionHandler(UnauthorizedException.class)
 	public void unauthorizedException(UnauthorizedException ex, HttpServletResponse response) throws IOException {
-		LOG.error(ex.getMessage());
+		log.error(ex.getMessage());
 		setResponse(response, 403, ex.getMessage());
 	}
 
 	@ExceptionHandler(RequestParameterException.class)
 	public void requestParameterException(RequestParameterException ex, HttpServletResponse response) {
-		LOG.error(ex.getMessage(), ex);
+		log.error(ex.getMessage(), ex);
 		setResponse(response, 400, ex.getMessage());
 	}
 
 	@ExceptionHandler(EntityNotFoundException.class)
 	public void entityNotFoundException(EntityNotFoundException ex, HttpServletResponse response) {
-		LOG.error(ex.getMessage());
+		log.error(ex.getMessage());
 		setResponse(response, 500, ex.getMessage());
 	}
 
 	@ExceptionHandler(NotImplementedException.class)
 	public void notImplementedException(NotImplementedException ex, HttpServletResponse response) {
-		LOG.error(ex.getMessage(), ex);
+		log.error(ex.getMessage(), ex);
 		setResponse(response, 501, ex.getMessage());
 	}
 
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public void resourceNotFoundException(ResourceNotFoundException ex, HttpServletResponse response) {
-		LOG.error(ex.getMessage());
+		log.error(ex.getMessage());
 		setResponse(response, 404, ex.getMessage());
 	}
 
@@ -127,7 +124,7 @@ public abstract class AbstractController {
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	@ResponseBody
 	public Map<String, String> methodArgumentNotValid(MethodArgumentNotValidException ex) throws IOException {
-		LOG.error(ex.getMessage());
+		log.error(ex.getMessage());
 		return bindingResultsToErrors(ex.getBindingResult());
 	}
 
@@ -135,13 +132,13 @@ public abstract class AbstractController {
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	@ResponseBody
 	public Map<String, String> bindException(BindException ex, HttpServletResponse response) throws IOException {
-		LOG.error(ex.getMessage());
+		log.error(ex.getMessage());
 		return bindingResultsToErrors(ex.getBindingResult());
 	}
 
 	@ExceptionHandler(value = {InvalidFormatException.class})
 	public void invalidFormatException(InvalidFormatException ex, HttpServletResponse response) throws IOException {
-		LOG.error(ex.getMessage());
+		log.error(ex.getMessage());
 		setResponse(response, 400, ex.getMessage());
 	}
 
@@ -149,7 +146,7 @@ public abstract class AbstractController {
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	@ResponseBody
 	public Map<String, String> emailUniqueException(EmailUniqueException ex) throws IOException {
-		LOG.error(ex.getMessage());
+		log.error(ex.getMessage());
 
 		Map<String, String> errors = new HashMap<String, String>();
 		errors.put("email", ex.getMessage());
@@ -174,7 +171,7 @@ public abstract class AbstractController {
 			response.getWriter().print(message);
 		}
 		catch (IOException ex) {
-			LOG.error(ex.getMessage(), ex);
+			log.error(ex.getMessage(), ex);
 		}
 	}
 }

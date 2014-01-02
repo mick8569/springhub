@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 public class SecurityInterceptor implements HandlerInterceptor {
 
 	/** Class logger */
-	private static final Logger LOG = LoggerFactory.getLogger(SecurityInterceptor.class);
+	private static final Logger log = LoggerFactory.getLogger(SecurityInterceptor.class);
 
 	/** Secret key used by cookie */
 	private String secret;
@@ -31,19 +31,19 @@ public class SecurityInterceptor implements HandlerInterceptor {
 		HandlerMethod method = (HandlerMethod) handler;
 		Security methodAnnotation = method.getMethodAnnotation(Security.class);
 		if (methodAnnotation != null) {
-			LOG.debug("Request is securized, check for session");
+			log.debug("Request is securized, check for session");
 
 			Session session = new Session(request, response, salt, secret);
 			String value = session.get(cookieName);
 
 			if (!NumberUtils.isNumber(value)) {
-				LOG.info("No session available or session is not valid");
+				log.info("No session available or session is not valid");
 				if (StringUtils.isNotEmpty(methodAnnotation.redirectTo())) {
-					LOG.info("Redirect to page '{}'", methodAnnotation.redirectTo());
+					log.info("Redirect to page '{}'", methodAnnotation.redirectTo());
 					response.sendRedirect(methodAnnotation.redirectTo());
 				}
 				else {
-					LOG.info("Return unauthorized status");
+					log.info("Return unauthorized status");
 					response.setStatus(401);
 				}
 				return false;
