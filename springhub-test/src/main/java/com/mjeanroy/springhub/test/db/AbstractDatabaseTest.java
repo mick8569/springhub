@@ -29,19 +29,29 @@ import com.mjeanroy.springhub.test.exceptions.InMemoryDatabaseException;
 
 public abstract class AbstractDatabaseTest {
 
-	/** Class logger */
+	/**
+	 * Class logger
+	 */
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabaseTest.class);
 
-	/** DBUnit database tester handler */
+	/**
+	 * DBUnit database tester handler
+	 */
 	protected static IDatabaseTester databaseTester;
 
-	/** Datasource configured on databaseTester */
+	/**
+	 * Datasource configured on databaseTester
+	 */
 	protected static DataSource databaseDatasource;
 
-	/** Flag that check if tests database has been initialized or not */
+	/**
+	 * Flag that check if tests database has been initialized or not
+	 */
 	protected static boolean initialized = false;
 
-	/** Test datasource */
+	/**
+	 * Test datasource
+	 */
 	@Autowired
 	protected DataSource datasource;
 
@@ -159,9 +169,9 @@ public abstract class AbstractDatabaseTest {
 	/**
 	 * Query database.
 	 *
-	 * @param sql    SQL Query.
+	 * @param sql SQL Query.
 	 * @param mapper Mapper to return object associated to database result.
-	 * @param <T>    Type of object to return.
+	 * @param <T> Type of object to return.
 	 * @return Object, null if cannot be found.
 	 */
 	public <T> T query(String sql, RowMapper<T> mapper) {
@@ -176,9 +186,9 @@ public abstract class AbstractDatabaseTest {
 	/**
 	 * Query database.
 	 *
-	 * @param sql   SQL Query.
+	 * @param sql SQL Query.
 	 * @param klass Class of returned object.
-	 * @param <T>   Type of object to return.
+	 * @param <T> Type of object to return.
 	 * @return Object, null if object cannot be found.
 	 */
 	public <T> T query(String sql, Class<T> klass) {
@@ -193,13 +203,57 @@ public abstract class AbstractDatabaseTest {
 	/**
 	 * Query database and return result list.
 	 *
-	 * @param sql    SQL Query.
+	 * @param sql SQL Query.
 	 * @param mapper Row mapper.
-	 * @param <T>    Type of object to return.
+	 * @param <T> Type of object to return.
 	 * @return Result list.
 	 */
 	public <T> List<T> queryList(String sql, RowMapper<T> mapper) {
 		return jdbcTemplate.query(sql, mapper);
+	}
+
+	/**
+	 * Get last insertion using "id" as column name to sort data.
+	 * Null is returned if insertion is not found.
+	 *
+	 * @param tableName Table name.
+	 * @param mapper Object mapper.
+	 * @param <T> Type of object to return.
+	 * @return Last insertion, null if insertion does not exist.
+	 */
+	public <T> T lastInserted(String tableName, RowMapper<T> mapper) {
+		return lastInserted(tableName, "id", 0, mapper);
+	}
+
+	/**
+	 * Get last insertion.
+	 * Null is returned if insertion is not found.
+	 *
+	 * @param tableName Table name.
+	 * @param keyName Id column name.
+	 * @param mapper Object mapper.
+	 * @param <T> Type of object to return.
+	 * @return Last insertion, null if insertion does not exist.
+	 */
+	public <T> T lastInserted(String tableName, String keyName, RowMapper<T> mapper) {
+		return lastInserted(tableName, keyName, 0, mapper);
+	}
+
+	/**
+	 * Get last n insertion.
+	 * Null is returned if insertion is not found.
+	 *
+	 * @param tableName Table name.
+	 * @param sortName Id column name.
+	 * @param idx Last insertion index (use 0 for last insertion, 1 for penultimate insertion etc).
+	 * @param mapper Object mapper.
+	 * @param <T> Type of object to return.
+	 * @return Last insertion, null if insertion does not exist.
+	 */
+	public <T> T lastInserted(String tableName, String sortName, int idx, RowMapper<T> mapper) {
+		String sql = String.format("SELECT * FROM %s ORDER BY %s DESC", tableName, sortName);
+		List<T> results = queryList(sql, mapper);
+		return results.size() <= idx ? null : results.get(idx);
 	}
 
 	/**

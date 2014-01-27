@@ -145,6 +145,70 @@ public class AbstractDatabaseTestTest {
 	}
 
 	@Test
+	public void test_should_get_last_insertion() {
+		// GIVEN
+		String sql = "SELECT * FROM foo ORDER BY id DESC";
+		RowMapper mapper = mock(RowMapper.class);
+		List<Object> objs = asList(mock(Object.class));
+		when(jdbcTemplate.query(sql, mapper)).thenReturn(objs);
+
+		// WHEN
+		Object result = databaseTest.lastInserted("foo", "id", 0, mapper);
+
+		// THEN
+		assertThat(result).isNotNull().isEqualTo(objs.get(0));
+		verify(jdbcTemplate).query(sql, mapper);
+	}
+
+	@Test
+	public void test_should_get_last_insertion_return_null_if_idx_is_out_of_bounds() {
+		// GIVEN
+		String sql = "SELECT * FROM foo ORDER BY id DESC";
+		RowMapper mapper = mock(RowMapper.class);
+		List<Object> objs = asList(mock(Object.class));
+		when(jdbcTemplate.query(sql, mapper)).thenReturn(objs);
+
+		// WHEN
+		Object result = databaseTest.lastInserted("foo", "id", 1, mapper);
+
+		// THEN
+		assertThat(result).isNull();
+		verify(jdbcTemplate).query(sql, mapper);
+	}
+
+	@Test
+	public void test_should_get_last_insertion_using_zero_by_default() {
+		// GIVEN
+		String sql = "SELECT * FROM foo ORDER BY id DESC";
+		RowMapper mapper = mock(RowMapper.class);
+		List<Object> objs = asList(mock(Object.class), mock(Object.class));
+		when(jdbcTemplate.query(sql, mapper)).thenReturn(objs);
+
+		// WHEN
+		Object result = databaseTest.lastInserted("foo", "id", mapper);
+
+		// THEN
+		assertThat(result).isNotNull().isEqualTo(objs.get(0));
+		verify(jdbcTemplate).query(sql, mapper);
+	}
+
+	@Test
+	public void test_should_get_last_insertion_using_id_and_zero_by_default() {
+		// GIVEN
+		String sql = "SELECT * FROM foo ORDER BY id DESC";
+		RowMapper mapper = mock(RowMapper.class);
+		List<Object> objs = asList(mock(Object.class), mock(Object.class));
+		when(jdbcTemplate.query(sql, mapper)).thenReturn(objs);
+
+		// WHEN
+		Object result = databaseTest.lastInserted("foo", mapper);
+
+		// THEN
+		assertThat(result).isNotNull().isEqualTo(objs.get(0));
+		verify(jdbcTemplate).query(sql, mapper);
+	}
+
+	@Test
 	public void test_should_start_hsqldb() throws Exception {
 		databaseTest.startHsqlDb();
 
