@@ -4,6 +4,10 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.google.common.base.Objects.firstNonNull;
+import static com.mjeanroy.springhub.commons.web.utils.Browser.Company.findByUserAgent;
+import static java.lang.Integer.parseInt;
+
 public class Browser {
 
 	/** User agent of client */
@@ -23,41 +27,42 @@ public class Browser {
 
 	public Browser(HttpServletRequest request) {
 		super();
-		this.userAgent = request.getHeader("User-Agent");
-		this.initializeCompany();
-		this.initializeVersion();
+
+		// User agent may be null
+		userAgent = firstNonNull(request.getHeader("User-Agent"), "");
+		initializeCompany();
+		initializeVersion();
 	}
 
 	/** Parse version from user agent label. */
 	private void initializeVersion() {
-		String ua = this.userAgent.toLowerCase();
+		String ua = userAgent.toLowerCase();
 
-		if (this.company.equals(Company.MICROSOFT)) {
+		if (company.equals(Company.MICROSOFT)) {
 			String str = ua.substring(ua.indexOf("msie") + 5);
-			this.version = str.substring(0, str.indexOf(";"));
+			version = str.substring(0, str.indexOf(";"));
 
-		} else if (this.company.equals(Company.GOOGLE)) {
-			this.version = getVersion(ua, "chrome/([0-9\\.]+)");
+		} else if (company.equals(Company.GOOGLE)) {
+			version = getVersion(ua, "chrome/([0-9\\.]+)");
 
-		} else if (this.company.equals(Company.MOZILLA)) {
-			this.version = getVersion(ua, "firefox/([0-9\\.]+)");
+		} else if (company.equals(Company.MOZILLA)) {
+			version = getVersion(ua, "firefox/([0-9\\.]+)");
 
-		} else if (this.company.equals(Company.APPLE)) {
-			this.version = getVersion(ua, "version/([0-9\\.]+)");
+		} else if (company.equals(Company.APPLE)) {
+			version = getVersion(ua, "version/([0-9\\.]+)");
 
-		} else if (this.company.equals(Company.OPERA)) {
-			this.version = getVersion(ua, "version/([0-9\\.]+)");
+		} else if (company.equals(Company.OPERA)) {
+			version = getVersion(ua, "version/([0-9\\.]+)");
 
-		} else {
+		} else if (!ua.isEmpty()) {
 			int tmpPos;
-			String tmpString;
-			tmpString = (ua.substring(tmpPos = (ua.indexOf("/")) + 1, tmpPos + ua.indexOf(" "))).trim();
-			this.version = tmpString.substring(0, tmpString.indexOf(" "));
+			String tmpString = (ua.substring(tmpPos = (ua.indexOf("/")) + 1, tmpPos + ua.indexOf(" "))).trim();
+			version = tmpString.substring(0, tmpString.indexOf(" "));
 		}
 
-		if ((this.version != null) && (this.version.length() > 0)) {
-			this.mainVersion = this.version.substring(0, this.version.indexOf("."));
-			this.minorVersion = this.version.substring(this.version.indexOf(".") + 1).trim();
+		if (version != null && !version.isEmpty()) {
+			mainVersion = version.substring(0, version.indexOf("."));
+			minorVersion = version.substring(version.indexOf(".") + 1).trim();
 		}
 	}
 
@@ -71,8 +76,8 @@ public class Browser {
 	}
 
 	private void initializeCompany() {
-		String ua = this.userAgent.toLowerCase();
-		this.company = Company.findByUserAgent(ua);
+		String ua = userAgent.toLowerCase();
+		company = findByUserAgent(ua);
 	}
 
 	/**
@@ -84,7 +89,7 @@ public class Browser {
 		if (!isIE()) {
 			return false;
 		}
-		int v = Integer.parseInt(this.mainVersion);
+		int v = parseInt(mainVersion);
 		return v <= 9;
 	}
 
@@ -94,7 +99,7 @@ public class Browser {
 	 * @return True if browser is Internet Explorer, false otherwise.
 	 */
 	public boolean isIE() {
-		return this.company.equals(Company.MICROSOFT);
+		return company.equals(Company.MICROSOFT);
 	}
 
 	/**
@@ -103,11 +108,7 @@ public class Browser {
 	 * @return True if browser is Internet Explorer with version <= 8, false otherwise.
 	 */
 	public boolean ltIE8() {
-		if (!isIE()) {
-			return false;
-		}
-		int v = Integer.parseInt(this.mainVersion);
-		return v <= 8;
+		return isIE() && parseInt(mainVersion) <= 8;
 	}
 
 	/**
@@ -116,11 +117,7 @@ public class Browser {
 	 * @return True if browser is Internet Explorer with version <= 7, false otherwise.
 	 */
 	public boolean ltIE7() {
-		if (!isIE()) {
-			return false;
-		}
-		int v = Integer.parseInt(this.mainVersion);
-		return v <= 7;
+		return isIE() && parseInt(mainVersion) <= 7;
 	}
 
 	/**
@@ -129,11 +126,7 @@ public class Browser {
 	 * @return True if browser is Internet Explorer with version <= 6, false otherwise.
 	 */
 	public boolean ltIE6() {
-		if (!isIE()) {
-			return false;
-		}
-		int v = Integer.parseInt(this.mainVersion);
-		return v <= 6;
+		return isIE() && parseInt(mainVersion) <= 6;
 	}
 
 	/**
@@ -202,9 +195,7 @@ public class Browser {
 
 		private String browserName;
 
-		private Company(String browserName) {
-			this.patternUserAgent = null;
-			this.browserName = browserName;
+		private Company() {
 		}
 
 		private Company(String patternUserAgent, String browserName) {
@@ -212,16 +203,11 @@ public class Browser {
 			this.browserName = browserName;
 		}
 
-		private Company() {
-			this.patternUserAgent = null;
-			this.browserName = "";
-		}
-
 		public static Company findByUserAgent(String ua) {
 			Company[] companies = Company.values();
 			for (Company company : companies) {
 				String patternUserAgent = company.patternUserAgent;
-				if ((patternUserAgent != null) && (ua.indexOf(patternUserAgent) > -1)) {
+				if (patternUserAgent != null && ua.contains(patternUserAgent)) {
 					return company;
 				}
 			}
