@@ -24,10 +24,12 @@ public class ServerRule extends ExternalResource {
 		this.server = server;
 	}
 
+	@Override
 	protected void before() {
 		start();
 	}
 
+	@Override
 	protected void after() {
 		stop();
 	}
