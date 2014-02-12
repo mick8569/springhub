@@ -14,7 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+
+import static com.mjeanroy.springhub.commons.collections.CollectionsUtils.size;
 
 @Component
 public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto> {
@@ -28,10 +31,10 @@ public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto
 	private Class<DTO> dtoClass;
 
 	@Inject
-	private GenericDao genericDao;
+	protected GenericDao genericDao;
 
 	@Inject
-	private Mapper mapper;
+	protected Mapper mapper;
 
 	@SuppressWarnings("unchecked")
 	public AbstractMapper() {
@@ -133,10 +136,10 @@ public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto
 	 * @return Converted dtos.
 	 */
 	@Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-	public List<DTO> getDtos(List<MODEL> entities) {
-		List<DTO> dtos = new ArrayList<DTO>();
-		if ((entities != null) && (!entities.isEmpty())) {
-			dtos = new ArrayList<DTO>(entities.size());
+	public List<DTO> getDtos(Collection<MODEL> entities) {
+		int size = size(entities);
+		List<DTO> dtos = new ArrayList<DTO>(size);
+		if (size > 0) {
 			for (MODEL MODEL : entities) {
 				DTO dto = getDto(MODEL);
 				dtos.add(dto);
@@ -146,16 +149,16 @@ public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto
 	}
 
 	/**
-	 * Convert a list of dtos to a list of entites.
+	 * Convert a list of dtos to a list of entities.
 	 *
 	 * @param dtos DTOs to convert.
 	 * @return Converted entities.
 	 */
 	@Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-	public List<MODEL> getEntities(List<DTO> dtos) {
-		List<MODEL> entities = new ArrayList<MODEL>();
-		if ((dtos != null) && (!dtos.isEmpty())) {
-			entities = new ArrayList<MODEL>(dtos.size());
+	public List<MODEL> getEntities(Collection<DTO> dtos) {
+		int size = size(dtos);
+		List<MODEL> entities = new ArrayList<MODEL>(size);
+		if (size > 0) {
 			for (DTO dto : dtos) {
 				MODEL MODEL = getEntity(dto);
 				entities.add(MODEL);
