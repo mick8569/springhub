@@ -10,6 +10,7 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.LockModeType;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +19,7 @@ import static com.mjeanroy.springhub.commons.reflections.ReflectionUtils.getGene
 /**
  * DAO implementation.
  *
- * @param <T>  Entity class.
+ * @param <T> Entity class.
  */
 @Repository
 public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
@@ -152,6 +153,26 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	}
 
 	/**
+	 * Find all entity associated to this DAO.
+	 *
+	 * @return All entity.
+	 */
+	@SuppressWarnings("unchecked")
+	public <K> List<T> findIn(Collection<K> values, String attribute) {
+		StringBuilder sb = new StringBuilder()
+				.append("SELECT x FROM ")
+				.append(type.getSimpleName())
+				.append(" x ")
+				.append("WHERE x.")
+				.append(attribute)
+				.append(" IN (:values)");
+
+		Query query = entityManager().createQuery(sb.toString());
+		query.setParameter("values", values);
+		return query.getResultList();
+	}
+
+	/**
 	 * Count all entities associated to this DAO.
 	 *
 	 * @return Total number of entities.
@@ -268,7 +289,8 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	public T getSingleEntity(Query query) {
 		try {
 			return (T) query.getSingleResult();
-		} catch (NoResultException ex) {
+		}
+		catch (NoResultException ex) {
 			return null;
 		}
 	}
