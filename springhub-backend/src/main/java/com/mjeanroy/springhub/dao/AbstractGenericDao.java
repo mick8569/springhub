@@ -1,5 +1,6 @@
 package com.mjeanroy.springhub.dao;
 
+import com.mjeanroy.springhub.exceptions.ReflectionException;
 import com.mjeanroy.springhub.models.entities.AbstractGenericEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
@@ -10,7 +11,9 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.LockModeType;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -153,9 +156,9 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	}
 
 	/**
-	 * Find all entity associated to this DAO.
+	 * Find all entities where attribute value is in given values.
 	 *
-	 * @return All entity.
+	 * @return Entities.
 	 */
 	@SuppressWarnings("unchecked")
 	public <K> List<T> findIn(Collection<K> values, String attribute) {
@@ -170,6 +173,45 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 		Query query = entityManager().createQuery(sb.toString());
 		query.setParameter("values", values);
 		return query.getResultList();
+	}
+
+	/**
+	 * Find all entities where attribute value is in given values.
+	 * A map indexed by value is returned.
+	 *
+	 * @return Entities.
+	 */
+	public <K> Map<K, T> indexBy(Collection<K> values, String attribute) {
+		Collection<T> results = findIn(values, attribute);
+
+		Map<K, T> map = new HashMap<K, T>();
+
+		try {
+			for (T result : results) {
+				Field field = result.getClass().getDeclaredField(attribute);
+				field.setAccessible(true);
+				K value = (K) field.get(result);
+				map.put(value, result);
+			}
+		}
+		catch (NoSuchFieldException ex) {
+			throw new ReflectionException(ex);
+		}
+		catch (IllegalAccessException ex) {
+			throw new ReflectionException(ex);
+		}
+
+		return map;
+	}
+
+	/**
+	 * Find all entities where 'id' attribute value is in given values.
+	 * A map indexed by 'id' value is returned.
+	 *
+	 * @return Entities.
+	 */
+	public <K> Map<K, T> indexById(Collection<K> values) {
+		return indexBy(values, "id");
 	}
 
 	/**
