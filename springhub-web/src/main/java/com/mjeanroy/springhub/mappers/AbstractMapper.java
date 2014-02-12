@@ -15,26 +15,29 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.mjeanroy.springhub.commons.collections.CollectionsUtils.size;
+import static java.util.Collections.emptyMap;
 
 @Component
 public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMapper.class);
 
-	/** Model's class */
-	private Class<MODEL> modelClass;
-
-	/** Dto's class */
-	private Class<DTO> dtoClass;
-
 	@Inject
 	protected GenericDao genericDao;
 
 	@Inject
 	protected Mapper mapper;
+
+	/** Model's class */
+	private Class<MODEL> modelClass;
+
+	/** Dto's class */
+	private Class<DTO> dtoClass;
 
 	@SuppressWarnings("unchecked")
 	public AbstractMapper() {
@@ -111,20 +114,26 @@ public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto
 	protected MODEL createEntity(DTO dto) {
 		MODEL model = null;
 
-		if (this.modelClass.isAssignableFrom(AbstractEntity.class)) {
+		if (!dto.isNew() && AbstractEntity.class.isAssignableFrom(modelClass)) {
 			model = (MODEL) genericDao.find(this.modelClass.asSubclass(AbstractEntity.class), dto.getId());
 		} else {
 			try {
 				model = this.modelClass.newInstance();
-			} catch (InstantiationException ex) {
+			}
+			catch (InstantiationException ex) {
 				log.error(ex.getMessage(), ex);
 				return null;
-			} catch (IllegalAccessException ex) {
+			}
+			catch (IllegalAccessException ex) {
 				log.error(ex.getMessage(), ex);
 				return null;
 			}
 		}
 
+		return fromDto(model, dto);
+	}
+
+	protected MODEL fromDto(MODEL model, DTO dto) {
 		mapper.map(dto, model);
 		return model;
 	}
@@ -154,16 +163,52 @@ public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto
 	 * @param dtos DTOs to convert.
 	 * @return Converted entities.
 	 */
+	@SuppressWarnings("unchecked")
 	@Transactional(readOnly = true, propagation = Propagation.REQUIRED)
 	public List<MODEL> getEntities(Collection<DTO> dtos) {
 		int size = size(dtos);
 		List<MODEL> entities = new ArrayList<MODEL>(size);
 		if (size > 0) {
+			Map<Long, DTO> mapDto = indexDtoById(dtos);
+			Map<Long, MODEL> mapModel = findEntitiesByIndex(mapDto);
 			for (DTO dto : dtos) {
-				MODEL MODEL = getEntity(dto);
-				entities.add(MODEL);
+				MODEL entity = buildEntity(mapModel, dto);
+				entities.add(entity);
 			}
 		}
 		return entities;
+	}
+
+	protected MODEL buildEntity(Map<Long, MODEL> mapModel, DTO dto) {
+		MODEL entity = null;
+		if (!dto.isNew()) {
+			Long id = dto.getId();
+			entity = mapModel.get(id);
+		}
+		return entity == null ? getEntity(dto) : fromDto(entity, dto);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected Map<Long, MODEL> findEntitiesByIndex(Map<Long, DTO> mapDto) {
+		Map<Long, MODEL> mapModel;
+
+		if (mapDto.isEmpty()) {
+			mapModel = emptyMap();
+		} else {
+			mapModel = (Map<Long, MODEL>) genericDao.indexById(mapDto.keySet());
+		}
+
+		return mapModel;
+	}
+
+	protected Map<Long, DTO> indexDtoById(Collection<DTO> dtos) {
+		Map<Long, DTO> mapDto = new HashMap<Long, DTO>();
+		for (DTO dto : dtos) {
+			if (!dto.isNew()) {
+				Long id = dto.getId();
+				mapDto.put(id, dto);
+			}
+		}
+		return mapDto;
 	}
 }

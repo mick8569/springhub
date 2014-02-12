@@ -58,7 +58,7 @@ public class AbstractDto<MODEL extends AbstractModel> implements Serializable {
 	 */
 	@JsonIgnore
 	public boolean isNew() {
-		return id == null || id.equals(0L);
+		return getId() == null || getId().equals(0L);
 	}
 
 	/**
