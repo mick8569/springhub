@@ -1,5 +1,6 @@
 package com.mjeanroy.springhub.test.dbunit;
 
+import static java.util.Collections.emptyMap;
 import static org.apache.commons.io.FileUtils.toFile;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.data.MapEntry.entry;
@@ -10,6 +11,11 @@ import java.io.File;
 import java.net.URL;
 import java.util.Iterator;
 
+import org.dbunit.dataset.CompositeDataSet;
+import org.dbunit.dataset.DefaultTable;
+import org.dbunit.dataset.IDataSet;
+import org.dbunit.dataset.ITable;
+import org.dbunit.dataset.ReplacementTable;
 import org.dbunit.operation.DatabaseOperation;
 import org.junit.Before;
 import org.junit.Test;
@@ -147,5 +153,69 @@ public class DBUnitTest {
 		// THEN
 		assertThat(result).isSameAs(dbUnit);
 		assertThat(dbUnit.tearDownOperation).isNotNull().isEqualTo(operation);
+	}
+
+	@Test
+	public void loadDataSet_should_load_data_set_without_replacements() throws Exception {
+		// GIVEN
+		DBUnit dbUnit = new DBUnit(dataSource);
+		dbUnit.replacements = emptyMap();
+
+		String path1 = "/dbunit/datasets/01-foo.xml";
+		URL url1 = getClass().getResource(path1);
+		File file1 = toFile(url1);
+
+		String path2 = "/dbunit/datasets/02-bar.xml";
+		URL url2 = getClass().getResource(path2);
+		File file2 = toFile(url2);
+
+		dbUnit.xmlDataSet.add(file1);
+		dbUnit.xmlDataSet.add(file2);
+
+		// WHEN
+		IDataSet dataSet = dbUnit.loadDataSet();
+
+		// THEN
+		assertThat(dataSet).isNotNull();
+		assertThat(dataSet).isInstanceOf(CompositeDataSet.class);
+
+		CompositeDataSet compositeDataSet = (CompositeDataSet) dataSet;
+
+		ITable[] tables = compositeDataSet.getTables();
+		assertThat(tables).isNotEmpty().hasSize(2);
+		assertThat(tables[0]).isInstanceOf(DefaultTable.class);
+		assertThat(tables[1]).isInstanceOf(DefaultTable.class);
+	}
+
+	@Test
+	public void loadDataSet_should_load_data_set_with_replacements() throws Exception {
+		// GIVEN
+		DBUnit dbUnit = new DBUnit(dataSource);
+
+		String path1 = "/dbunit/datasets/01-foo.xml";
+		URL url1 = getClass().getResource(path1);
+		File file1 = toFile(url1);
+
+		String path2 = "/dbunit/datasets/02-bar.xml";
+		URL url2 = getClass().getResource(path2);
+		File file2 = toFile(url2);
+
+		dbUnit.xmlDataSet.add(file1);
+		dbUnit.xmlDataSet.add(file2);
+		dbUnit.replacements.put("[NULL]", "foo");
+
+		// WHEN
+		IDataSet dataSet = dbUnit.loadDataSet();
+
+		// THEN
+		assertThat(dataSet).isNotNull();
+		assertThat(dataSet).isInstanceOf(CompositeDataSet.class);
+
+		CompositeDataSet compositeDataSet = (CompositeDataSet) dataSet;
+
+		ITable[] tables = compositeDataSet.getTables();
+		assertThat(tables).isNotEmpty().hasSize(2);
+		assertThat(tables[0]).isInstanceOf(ReplacementTable.class);
+		assertThat(tables[1]).isInstanceOf(ReplacementTable.class);
 	}
 }

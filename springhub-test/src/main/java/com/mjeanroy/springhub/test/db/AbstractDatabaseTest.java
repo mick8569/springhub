@@ -24,7 +24,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
-import com.mjeanroy.springhub.test.exceptions.DBUnitDataSetException;
+import com.mjeanroy.springhub.test.exceptions.DBUnitException;
 import com.mjeanroy.springhub.test.exceptions.InMemoryDatabaseException;
 
 public abstract class AbstractDatabaseTest {
@@ -291,7 +291,7 @@ public abstract class AbstractDatabaseTest {
 		}
 		catch (Exception ex) {
 			log.error(ex.getMessage(), ex);
-			throw new DBUnitDataSetException(ex);
+			throw new DBUnitException(ex);
 		}
 	}
 }

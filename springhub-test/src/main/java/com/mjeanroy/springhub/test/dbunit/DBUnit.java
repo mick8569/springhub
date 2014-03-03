@@ -5,6 +5,9 @@ import static org.apache.commons.io.FileUtils.toFile;
 
 import javax.sql.DataSource;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -12,9 +15,21 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.dbunit.dataset.CompositeDataSet;
+import org.dbunit.dataset.DataSetException;
+import org.dbunit.dataset.IDataSet;
+import org.dbunit.dataset.ReplacementDataSet;
+import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
 import org.dbunit.operation.DatabaseOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.mjeanroy.springhub.test.exceptions.DBUnitException;
 
 public class DBUnit {
+
+	/** Class logger. */
+	private static final Logger log = LoggerFactory.getLogger(DBUnit.class);
 
 	/** Target data source. */
 	protected DataSource dataSource;
@@ -121,5 +136,46 @@ public class DBUnit {
 	public DBUnit addReplacement(String key, Object value) {
 		replacements.put(key, value);
 		return this;
+	}
+
+	/**
+	 * Load DBUnit data set.
+	 *
+	 * @return Data set.
+	 */
+	protected IDataSet loadDataSet() {
+		try {
+			IDataSet[] datasets = new IDataSet[xmlDataSet.size()];
+			int i = 0;
+			for (File currentFile : xmlDataSet) {
+				FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
+				builder.setColumnSensing(true);
+				InputStream stream = new FileInputStream(currentFile);
+
+				IDataSet dataSet = builder.build(stream);
+
+				if (replacements != null && !replacements.isEmpty()) {
+					dataSet = new ReplacementDataSet(dataSet);
+					for (Map.Entry<String, Object> replacement : replacements.entrySet()) {
+						String key = replacement.getKey();
+						Object value = replacement.getValue();
+						((ReplacementDataSet) dataSet).addReplacementObject(key, value);
+					}
+				}
+
+				datasets[i] = dataSet;
+				i++;
+			}
+
+			return new CompositeDataSet(datasets);
+		}
+		catch (FileNotFoundException ex) {
+			log.error(ex.getMessage(), ex);
+			throw new DBUnitException(ex);
+		}
+		catch (DataSetException ex) {
+			log.error(ex.getMessage(), ex);
+			throw new DBUnitException(ex);
+		}
 	}
 }
