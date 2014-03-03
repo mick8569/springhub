@@ -3,10 +3,10 @@ package com.mjeanroy.springhub.test.db;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
-public class H2 extends AbstractEmbeddedDB implements DB {
+public class HSQL extends AbstractEmbeddedDB implements DB {
 
-	public H2() {
+	public HSQL() {
 		builder = new EmbeddedDatabaseBuilder()
-				.setType(EmbeddedDatabaseType.H2);
+				.setType(EmbeddedDatabaseType.HSQL);
 	}
 }

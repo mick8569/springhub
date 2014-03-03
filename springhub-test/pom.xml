@@ -15,6 +15,7 @@
 		<powermock.version>1.5.3</powermock.version>
 		<powermock-api-mockito.version>${powermock.version}</powermock-api-mockito.version>
 		<powermock-module-junit4.version>${powermock.version}</powermock-module-junit4.version>
+		<hsqldb.version>1.8.0.10</hsqldb.version>
 	</properties>
 
 	<dependencies>
@@ -168,6 +169,12 @@
 			<artifactId>powermock-api-mockito</artifactId>
 			<scope>test</scope>
 			<version>${powermock-api-mockito.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<scope>test</scope>
+			<version>${hsqldb.version}</version>
 		</dependency>
 	</dependencies>
 
