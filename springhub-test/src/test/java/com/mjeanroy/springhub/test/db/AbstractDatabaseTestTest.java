@@ -2,29 +2,24 @@ package com.mjeanroy.springhub.test.db;
 
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.util.List;
 
-import org.dbunit.DataSourceDatabaseTester;
-import org.dbunit.IDatabaseTester;
-import org.dbunit.database.IDatabaseConnection;
-import org.dbunit.dataset.CompositeDataSet;
-import org.dbunit.dataset.IDataSet;
-import org.dbunit.dataset.ITable;
-import org.dbunit.operation.DatabaseOperation;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+
+import com.mjeanroy.springhub.test.dbunit.DBUnit;
 
 @SuppressWarnings("unchecked")
 public class AbstractDatabaseTestTest {
@@ -33,29 +28,23 @@ public class AbstractDatabaseTestTest {
 
 	private JdbcTemplate jdbcTemplate;
 
-	private DataSource dataSource;
-
-	private Connection dataSourceConnection;
-
-	private DataSourceDatabaseTester dataSourceDatabaseTester;
-
-	private IDatabaseConnection dataSourceDatabaseTesterConnection;
+	private EmbeddedDatabase dataSource;
 
 	@Before
 	public void setUp() throws Exception {
 		jdbcTemplate = mock(JdbcTemplate.class);
 
-		dataSourceDatabaseTester = mock(DataSourceDatabaseTester.class);
-		dataSourceDatabaseTesterConnection = mock(IDatabaseConnection.class);
-		when(dataSourceDatabaseTester.getConnection()).thenReturn(dataSourceDatabaseTesterConnection);
+		dataSource = new EmbeddedDatabaseBuilder()
+				.setType(EmbeddedDatabaseType.H2)
+				.addScript("/dbunit/datasets/init.sql")
+				.build();
 
-		dataSource = mock(DataSource.class);
-		dataSourceConnection = mock(Connection.class);
-		when(dataSource.getConnection()).thenReturn(dataSourceConnection);
+		databaseTest = new AbstractDatabaseImpl(dataSource, jdbcTemplate);
+	}
 
-		databaseTest = new AbstractDatabaseImpl(dataSource, jdbcTemplate, dataSourceDatabaseTester);
-
-		AbstractDatabaseImpl.initialized = false;
+	@After
+	public void tearDown() {
+		dataSource.shutdown();
 	}
 
 	@Test
@@ -72,15 +61,6 @@ public class AbstractDatabaseTestTest {
 		int count = databaseTest.count("foo");
 		assertThat(count).isEqualTo(10);
 		verify(jdbcTemplate).queryForObject("SELECT COUNT(*) FROM foo", Integer.class);
-	}
-
-	@Test
-	public void test_get_dataset_filename_should_return_dataset_ordered_by_name() {
-		String[] dataset = databaseTest.getDataSetFilename();
-		assertThat(dataset).isNotNull().hasSize(2).isSorted().contains(
-				"01-foo.xml",
-				"02-bar.xml"
-		);
 	}
 
 	@Test
@@ -209,67 +189,32 @@ public class AbstractDatabaseTestTest {
 	}
 
 	@Test
-	public void test_should_start_hsqldb() throws Exception {
+	public void test_should_start_hsqldb() {
+		// WHEN
 		databaseTest.startHsqlDb();
 
-		assertThat(databaseTest.datasource).isEqualTo(dataSource);
-		assertThat(AbstractDatabaseImpl.initialized).isTrue();
-		verify(dataSourceDatabaseTester).setSetUpOperation(DatabaseOperation.CLEAN_INSERT);
-
-		ArgumentCaptor<IDataSet> argDataSet = ArgumentCaptor.forClass(IDataSet.class);
-		verify(dataSourceDatabaseTester).setDataSet(argDataSet.capture());
-		verify(dataSourceDatabaseTester).onSetup();
-
-		IDataSet dataSet = argDataSet.getValue();
-		assertThat(dataSet).isExactlyInstanceOf(CompositeDataSet.class);
-
-		CompositeDataSet compositeDataSet = (CompositeDataSet) dataSet;
-		ITable[] tables = compositeDataSet.getTables();
-		assertThat(tables).isNotEmpty().hasSize(2);
-	}
-
-	@Test
-	public void test_should_not_start_hsqldb_twice() throws Exception {
-		databaseTest.startHsqlDb();
-		databaseTest.startHsqlDb();
-
-		verify(dataSourceDatabaseTester, times(1)).setSetUpOperation(DatabaseOperation.CLEAN_INSERT);
-		verify(dataSourceDatabaseTester, times(1)).setDataSet(any(IDataSet.class));
-		verify(dataSourceDatabaseTester, times(1)).onSetup();
+		// THEN
+		assertThat(AbstractDatabaseImpl.dbUnit).isNotNull();
 	}
 
 	@Test
 	public void test_should_stop_hsqldb() throws Exception {
-		AbstractDatabaseImpl.initialize(dataSource, dataSourceDatabaseTester);
+		// // GIVEN
+		DBUnit dbUnit = mock(DBUnit.class);
+		AbstractDatabaseImpl.dbUnit = dbUnit;
+
+		// WHEN
 		AbstractDatabaseImpl.stopHsqlDb();
 
-		verify(dataSourceDatabaseTester).onTearDown();
-		verify(dataSourceConnection).close();
-		verify(dataSourceDatabaseTesterConnection).close();
-		assertThat(AbstractDatabaseImpl.databaseDatasource).isNull();
-		assertThat(AbstractDatabaseImpl.databaseTester).isNull();
-		assertThat(AbstractDatabaseImpl.initialized).isFalse();
+		// THEN
+		verify(dbUnit).tearDown();
 	}
 
 	public static final class AbstractDatabaseImpl extends AbstractDatabaseTest {
 
-		private DataSourceDatabaseTester tester;
-
-		public AbstractDatabaseImpl(DataSource dataSource, JdbcTemplate jdbcTemplate, DataSourceDatabaseTester databaseTester) {
+		public AbstractDatabaseImpl(DataSource dataSource, JdbcTemplate jdbcTemplate) {
 			this.datasource = dataSource;
 			this.jdbcTemplate = jdbcTemplate;
-			this.tester = databaseTester;
-		}
-
-		public static void initialize(DataSource dataSource, DataSourceDatabaseTester tester) {
-			initialized = true;
-			databaseTester = tester;
-			databaseDatasource = dataSource;
-		}
-
-		@Override
-		public IDatabaseTester buildDatabaseTester(DataSource dataSource) {
-			return tester;
 		}
 	}
 

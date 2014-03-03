@@ -1,22 +1,8 @@
 package com.mjeanroy.springhub.test.db;
 
-import static java.util.Collections.sort;
-
 import javax.sql.DataSource;
-import java.io.File;
-import java.net.URI;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-import org.dbunit.DataSourceDatabaseTester;
-import org.dbunit.IDatabaseTester;
-import org.dbunit.dataset.CompositeDataSet;
-import org.dbunit.dataset.IDataSet;
-import org.dbunit.dataset.ReplacementDataSet;
-import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
-import org.dbunit.operation.DatabaseOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,56 +10,29 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
-import com.mjeanroy.springhub.test.exceptions.DBUnitException;
+import com.mjeanroy.springhub.test.dbunit.DBUnit;
 import com.mjeanroy.springhub.test.exceptions.InMemoryDatabaseException;
 
 public abstract class AbstractDatabaseTest {
 
-	/**
-	 * Class logger
-	 */
+	/** Class logger */
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabaseTest.class);
 
-	/**
-	 * DBUnit database tester handler
-	 */
-	protected static IDatabaseTester databaseTester;
+	/** DBUnit instance. */
+	protected static DBUnit dbUnit = null;
 
-	/**
-	 * Datasource configured on databaseTester
-	 */
-	protected static DataSource databaseDatasource;
-
-	/**
-	 * Flag that check if tests database has been initialized or not
-	 */
-	protected static boolean initialized = false;
-
-	/**
-	 * Test datasource
-	 */
+	/** Test datasource */
 	@Autowired
 	protected DataSource datasource;
 
 	@Autowired
 	protected JdbcTemplate jdbcTemplate;
 
-	/**
-	 * Stop in memory database.
-	 *
-	 * @throws Exception
-	 */
-	protected static void stopHsqlDb() throws Exception {
-		if (databaseTester != null) {
-			log.info("Stop in memory database");
-
-			databaseTester.onTearDown();
-			databaseTester.getConnection().close();
-			databaseDatasource.getConnection().close();
-
-			databaseTester = null;
-			databaseDatasource = null;
-			initialized = false;
+	/** Stop in memory database. */
+	protected static void stopHsqlDb() {
+		if (dbUnit != null) {
+			dbUnit.tearDown();
+			dbUnit = null;
 		}
 	}
 
@@ -86,62 +45,19 @@ public abstract class AbstractDatabaseTest {
 		return "/dbunit/datasets/";
 	}
 
-	/**
-	 * Start in-memory database and load all datasets.<br> If database was already initialized, it will not be initialized twice.
-	 *
-	 * @throws Exception
-	 */
+	/** Start in-memory database and load all datasets. If database was already initialized, it will not be initialized twice. */
 	protected void startHsqlDb() {
-		if (!initialized) {
+		if (dbUnit == null) {
 			try {
-				log.info("Start in-memory database");
-
-				// Initialize connection to tests database
-				databaseTester = buildDatabaseTester(datasource);
-				databaseDatasource = datasource;
-
-				databaseTester.setSetUpOperation(DatabaseOperation.CLEAN_INSERT);
-				databaseTester.setTearDownOperation(DatabaseOperation.CLOSE_CONNECTION(DatabaseOperation.DELETE_ALL));
-
-				// Load datasets
-				String[] xmlDatasets = getDataSetFilename();
-				IDataSet[] datasets = new IDataSet[xmlDatasets.length];
-				for (int i = 0; i < xmlDatasets.length; i++) {
-					String nameDataset = xmlDatasets[i];
-
-					log.debug("Load dataset : " + nameDataset);
-					FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
-					builder.setColumnSensing(true);
-					IDataSet dataSet = builder.build(AbstractDatabaseTest.class.getResourceAsStream(pathDbunitDatasets() + nameDataset));
-
-					log.debug("Replace null values in dataset : " + nameDataset);
-					ReplacementDataSet dataSetReplacement = new ReplacementDataSet(dataSet);
-					dataSetReplacement.addReplacementObject("[NULL]", null);
-
-					datasets[i] = dataSetReplacement;
-				}
-
-				databaseTester.setDataSet(new CompositeDataSet(datasets));
-				databaseTester.onSetup();
-
-				initialized = true;
+				dbUnit = new DBUnit(datasource)
+						.addDirectory(pathDbunitDatasets())
+						.setUp();
 			}
 			catch (Exception ex) {
 				log.error(ex.getMessage(), ex);
 				throw new InMemoryDatabaseException(ex);
 			}
 		}
-	}
-
-	/**
-	 * Build DBUnit database tester to load during in memory database initialization.
-	 * Visible for tests.
-	 *
-	 * @param datasource Datasource to use.
-	 * @return Database tester.
-	 */
-	protected IDatabaseTester buildDatabaseTester(DataSource datasource) {
-		return new DataSourceDatabaseTester(datasource);
 	}
 
 	/**
@@ -254,44 +170,5 @@ public abstract class AbstractDatabaseTest {
 		String sql = String.format("SELECT * FROM %s ORDER BY %s DESC", tableName, sortName);
 		List<T> results = queryList(sql, mapper);
 		return results.size() <= idx ? null : results.get(idx);
-	}
-
-	/**
-	 * Get all datasets to load in database.<br />
-	 *
-	 * @return Array of all datasets' names.
-	 */
-	protected String[] getDataSetFilename() {
-		try {
-			String path = pathDbunitDatasets();
-			log.info("Load dbunit dataset from {}", path);
-
-			URL url = getClass().getResource(pathDbunitDatasets());
-			URI uri = url.toURI();
-
-			File directory = (new File(uri));
-
-			log.debug("List files in directory {}", directory.getAbsolutePath());
-			List<File> files = new ArrayList<File>(FileUtils.listFiles(directory, new String[]{"xml"}, false));
-
-			// Sort by name
-			log.debug("Sort files by name");
-			sort(files);
-
-			log.info("DBUnit dataset : {}", files);
-
-			String[] results = new String[files.size()];
-			int i = 0;
-			for (File file : files) {
-				results[i] = file.getName();
-				i++;
-			}
-
-			return results;
-		}
-		catch (Exception ex) {
-			log.error(ex.getMessage(), ex);
-			throw new DBUnitException(ex);
-		}
 	}
 }
