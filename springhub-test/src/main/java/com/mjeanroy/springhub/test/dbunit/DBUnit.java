@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.dbunit.DataSourceDatabaseTester;
+import org.dbunit.IDatabaseTester;
 import org.dbunit.dataset.CompositeDataSet;
 import org.dbunit.dataset.DataSetException;
 import org.dbunit.dataset.IDataSet;
@@ -45,6 +47,9 @@ public class DBUnit {
 
 	/** Database tear down operation. */
 	protected DatabaseOperation tearDownOperation;
+
+	/** DBUnit database. */
+	protected IDatabaseTester databaseTester;
 
 	/**
 	 * Build new DBUnit instance.
@@ -135,6 +140,68 @@ public class DBUnit {
 	 */
 	public DBUnit addReplacement(String key, Object value) {
 		replacements.put(key, value);
+		return this;
+	}
+
+	/**
+	 * Check if dbunit data set has been loaded.
+	 *
+	 * @return True if DBUnit data set has been loaded, false otherwise.
+	 */
+	public boolean isSetUp() {
+		return databaseTester != null;
+	}
+
+	/**
+	 * Set up DBUnit data set.
+	 *
+	 * @return this.
+	 */
+	public DBUnit setUp() {
+		if (!isSetUp()) {
+			try {
+				databaseTester = new DataSourceDatabaseTester(dataSource);
+
+				if (setUpOperation != null) {
+					databaseTester.setSetUpOperation(setUpOperation);
+				}
+
+				if (tearDownOperation != null) {
+					databaseTester.setTearDownOperation(tearDownOperation);
+				}
+
+				// Load datasets
+				IDataSet dataSet = loadDataSet();
+				databaseTester.setDataSet(dataSet);
+				databaseTester.onSetup();
+			}
+			catch (Exception ex) {
+				log.error(ex.getMessage(), ex);
+				throw new DBUnitException(ex);
+			}
+		}
+
+		return this;
+	}
+
+	/**
+	 * Tear down DB Unit.
+	 *
+	 * @return this.
+	 */
+	public DBUnit tearDown() {
+		if (isSetUp()) {
+			try {
+				databaseTester.onTearDown();
+			}
+			catch (Exception ex) {
+				log.error(ex.getMessage(), ex);
+				throw new DBUnitException(ex);
+			}
+			finally {
+				databaseTester = null;
+			}
+		}
 		return this;
 	}
 
