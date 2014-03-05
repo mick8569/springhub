@@ -1,25 +1,60 @@
 package com.mjeanroy.springhub.test.servers;
 
+import static org.eclipse.jetty.util.resource.Resource.newResource;
+
+import javax.servlet.ServletContainerInitializer;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.eclipse.jetty.annotations.AbstractDiscoverableAnnotationHandler;
+import org.eclipse.jetty.annotations.AnnotationConfiguration;
+import org.eclipse.jetty.annotations.AnnotationDecorator;
+import org.eclipse.jetty.annotations.AnnotationParser;
+import org.eclipse.jetty.annotations.ClassNameResolver;
+import org.eclipse.jetty.annotations.WebFilterAnnotationHandler;
+import org.eclipse.jetty.annotations.WebListenerAnnotationHandler;
+import org.eclipse.jetty.annotations.WebServletAnnotationHandler;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.util.resource.FileResource;
+import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.webapp.Configuration;
+import org.eclipse.jetty.webapp.FragmentConfiguration;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.webapp.WebInfConfiguration;
+import org.eclipse.jetty.webapp.WebXmlConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Embedded Jetty Implementation. */
+/**
+ * Embedded Jetty Implementation.
+ */
 public class EmbeddedJetty implements EmbeddedServer {
 
-	/** Class logger. */
+	/**
+	 * Class logger.
+	 */
 	private static final Logger log = LoggerFactory.getLogger(EmbeddedJetty.class);
 
-	/** Jetty Server. */
+	/**
+	 * Jetty Server.
+	 */
 	protected Server server;
 
-	/** Flag to know if jetty is started. */
+	/**
+	 * Flag to know if jetty is started.
+	 */
 	protected boolean started;
 
-	/** Webapp directory. */
+	/**
+	 * Webapp directory.
+	 */
 	protected String webapp;
 
 	private ServerConnector serverConnector;
@@ -75,8 +110,23 @@ public class EmbeddedJetty implements EmbeddedServer {
 
 				WebAppContext ctx = new WebAppContext();
 				ctx.setContextPath(contextPath);
+
+				// Useful for WebXmlConfiguration
+				ctx.setBaseResource(newResource(webapp));
+
+				ctx.setClassLoader(Thread.currentThread().getContextClassLoader());
+
+				ctx.setConfigurations(new Configuration[]{
+						new WebXmlConfiguration(),
+						new AnnotationConfiguration()
+				});
+
+				ctx.getMetaData().addContainerResource(new FileResource(new File("./target/classes").toURI()));
+
+				ctx.setParentLoaderPriority(true);
 				ctx.setWar(webapp);
 				ctx.setServer(server);
+
 				server.setHandler(ctx);
 
 				Thread thread = new Thread() {
