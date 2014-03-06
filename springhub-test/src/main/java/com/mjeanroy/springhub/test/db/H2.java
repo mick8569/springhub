@@ -5,7 +5,16 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
 public class H2 extends AbstractEmbeddedDB implements DB {
 
-	public H2() {
+	protected static H2 h2;
+
+	public static H2 instance() {
+		if (h2 == null) {
+			h2 = new H2();
+		}
+		return h2;
+	}
+
+	private H2() {
 		builder = new EmbeddedDatabaseBuilder()
 				.setType(EmbeddedDatabaseType.H2);
 	}

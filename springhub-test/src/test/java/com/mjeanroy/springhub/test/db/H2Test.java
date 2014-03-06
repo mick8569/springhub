@@ -6,16 +6,23 @@ import static org.mockito.Mockito.verify;
 
 import javax.sql.DataSource;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 
 public class H2Test {
 
+	@After
+	public void tearDown() {
+		H2.h2 = null;
+	}
+
 	@Test
 	public void should_initialize_h2_builder() {
 		// WHEN
-		H2 h2 = new H2();
+		H2 h2 = H2.instance();
 
 		// THEN
 		assertThat(h2.builder).isNotNull();
@@ -25,7 +32,7 @@ public class H2Test {
 	@Test
 	public void isStarted_should_return_false_if_db_is_null() {
 		// GIVEN
-		H2 h2 = new H2();
+		H2 h2 = H2.instance();
 		h2.db = null;
 
 		// WHEN
@@ -38,7 +45,7 @@ public class H2Test {
 	@Test
 	public void isStarted_should_return_true_if_db_is_not_null() {
 		// GIVEN
-		H2 h2 = new H2();
+		H2 h2 = H2.instance();
 		h2.db = mock(EmbeddedDatabase.class);
 
 		// WHEN
@@ -51,7 +58,7 @@ public class H2Test {
 	@Test
 	public void start_should_start_embedded_db() {
 		// GIVEN
-		H2 h2 = new H2();
+		H2 h2 = H2.instance();
 
 		// WHEN
 		DataSource ds = h2.start();
@@ -64,7 +71,7 @@ public class H2Test {
 	@Test
 	public void shutdown_should_stop_embedded_db() {
 		// GIVEN
-		H2 h2 = new H2();
+		H2 h2 = H2.instance();
 		EmbeddedDatabase db = mock(EmbeddedDatabase.class);
 		h2.db = db;
 
@@ -79,7 +86,7 @@ public class H2Test {
 	@Test
 	public void addInitScript_should_add_init_script() {
 		// GIVEN
-		H2 h2 = new H2();
+		H2 h2 = H2.instance();
 		h2.builder = mock(EmbeddedDatabaseBuilder.class);
 		String script = "/foo";
 
@@ -93,7 +100,7 @@ public class H2Test {
 	@Test(expected = RuntimeException.class)
 	public void addInitScript_should_fail_if_database_is_already_started() {
 		// GIVEN
-		H2 h2 = new H2();
+		H2 h2 = H2.instance();
 		h2.builder = mock(EmbeddedDatabaseBuilder.class);
 		h2.db = mock(EmbeddedDatabase.class);
 		String script = "/foo";

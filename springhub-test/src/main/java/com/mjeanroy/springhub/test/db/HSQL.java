@@ -5,7 +5,16 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
 public class HSQL extends AbstractEmbeddedDB implements DB {
 
-	public HSQL() {
+	protected static HSQL hsql;
+
+	public static HSQL instance() {
+		if (hsql == null) {
+			hsql = new HSQL();
+		}
+		return hsql;
+	}
+
+	private HSQL() {
 		builder = new EmbeddedDatabaseBuilder()
 				.setType(EmbeddedDatabaseType.HSQL);
 	}
