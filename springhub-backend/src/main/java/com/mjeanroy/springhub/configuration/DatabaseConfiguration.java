@@ -28,7 +28,6 @@ public abstract class DatabaseConfiguration {
 	/** Class logger. */
 	private static final Logger log = LoggerFactory.getLogger(DatabaseConfiguration.class);
 
-	@Bean
 	public abstract DataSource dataSource();
 
 	@Bean(destroyMethod = "destroy")
@@ -88,6 +87,7 @@ public abstract class DatabaseConfiguration {
 		log.info("Configure JPA transaction manager");
 		JpaTransactionManager txManager = new JpaTransactionManager();
 		txManager.setDataSource(dataSource());
+		txManager.afterPropertiesSet();
 		return txManager;
 	}
 
