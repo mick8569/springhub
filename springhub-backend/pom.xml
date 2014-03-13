@@ -34,6 +34,13 @@
 			<version>${javax-inject.version}</version>
 		</dependency>
 
+		<!-- JSR 330 -->
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<version>${validation-api.version}</version>
+		</dependency>
+
 		<!-- Spring Framework -->
 		<dependency>
 			<groupId>org.springframework</groupId>
