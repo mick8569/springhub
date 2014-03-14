@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
+import javax.persistence.FlushModeType;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.util.HashMap;
@@ -24,6 +25,31 @@ import static org.mockito.Mockito.when;
 public class AbstractGenericDaoTest {
 
 	private final EntityManager entityManager = mock(EntityManager.class);
+
+	@Test
+	public void test_getFlushMode() {
+		// GIVEN
+		FlushModeType flushModeType = FlushModeType.COMMIT;
+		when(entityManager.getFlushMode()).thenReturn(flushModeType);
+
+		// WHEN
+		FlushModeType flushMode = dao().getFlushMode();
+
+		// THEN
+		assertThat(flushMode).isEqualTo(flushModeType);
+	}
+
+	@Test
+	public void test_setFlushMode() {
+		// GIVEN
+		FlushModeType flushModeType = FlushModeType.COMMIT;
+
+		// WHEN
+		dao().setFlushMode(flushModeType);
+
+		// THEN
+		verify(entityManager).setFlushMode(flushModeType);
+	}
 
 	@Test
 	public void test_flush() {

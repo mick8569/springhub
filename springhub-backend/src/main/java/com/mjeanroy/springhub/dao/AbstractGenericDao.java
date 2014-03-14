@@ -1,13 +1,11 @@
 package com.mjeanroy.springhub.dao;
 
-import com.mjeanroy.springhub.exceptions.ReflectionException;
-import com.mjeanroy.springhub.models.entities.AbstractGenericEntity;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import static com.mjeanroy.springhub.commons.reflections.ReflectionUtils.getGenericType;
+import static org.springframework.transaction.annotation.Propagation.REQUIRED;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
+import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
@@ -17,7 +15,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.mjeanroy.springhub.commons.reflections.ReflectionUtils.getGenericType;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.mjeanroy.springhub.exceptions.ReflectionException;
+import com.mjeanroy.springhub.models.entities.AbstractGenericEntity;
 
 /**
  * DAO implementation.
@@ -37,6 +39,24 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 
 	/** Entity Manager */
 	protected abstract EntityManager entityManager();
+
+	/**
+	 * Get entity manager flush mode.
+	 *
+	 * @return Flush mode.
+	 */
+	public FlushModeType getFlushMode() {
+		return entityManager().getFlushMode();
+	}
+
+	/**
+	 * Set flush mode on entity manager.
+	 *
+	 * @param flushMode New flush mode.
+	 */
+	public void setFlushMode(FlushModeType flushMode) {
+		entityManager().setFlushMode(flushMode);
+	}
 
 	/** Flush persistence context. */
 	public void flush() {
@@ -63,7 +83,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 *
 	 * @param o Entity to persist.
 	 */
-	@Transactional(readOnly = false, propagation = Propagation.REQUIRED)
+	@Transactional(readOnly = false, propagation = REQUIRED)
 	public void persist(T o) {
 		entityManager().persist(o);
 	}
@@ -74,7 +94,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 * @param o Entity to merge.
 	 * @return Merged entity.
 	 */
-	@Transactional(readOnly = false, propagation = Propagation.REQUIRED)
+	@Transactional(readOnly = false, propagation = REQUIRED)
 	public T merge(T o) {
 		return entityManager().merge(o);
 	}
@@ -84,7 +104,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 *
 	 * @param o Entity to remove.
 	 */
-	@Transactional(readOnly = false, propagation = Propagation.REQUIRED)
+	@Transactional(readOnly = false, propagation = REQUIRED)
 	public void remove(T o) {
 		entityManager().remove(o);
 	}
@@ -111,7 +131,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 * Lock an entity instance that is contained in the persistence
 	 * context with the specified lock mode type
 	 *
-	 * @param o            Entity to lock.
+	 * @param o Entity to lock.
 	 * @param lockModeType Lock type.
 	 */
 	public void lock(T o, LockModeType lockModeType) {
@@ -251,7 +271,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	/**
 	 * Find list of entities for a given query with given parameters.
 	 *
-	 * @param query  Query.
+	 * @param query Query.
 	 * @param params Query parameters.
 	 * @return All entities matching given query.
 	 */
@@ -262,9 +282,9 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	/**
 	 * Find list of entities for a given query with given parameters and limit number of results to a given number.
 	 *
-	 * @param query  Query.
+	 * @param query Query.
 	 * @param params Query parameters.
-	 * @param limit  Maximum number of results.
+	 * @param limit Maximum number of results.
 	 * @return All entities matching given query.
 	 */
 	public List<T> getEntityList(CharSequence query, Map<String, Object> params, int limit) {
@@ -307,7 +327,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	/**
 	 * Find entity for a given query.
 	 *
-	 * @param query  Query.
+	 * @param query Query.
 	 * @param params Query parameters.
 	 * @return Entity, null if no entity match given query.
 	 */
@@ -350,7 +370,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	/**
 	 * Count entities matching given query.
 	 *
-	 * @param query  Query.
+	 * @param query Query.
 	 * @param params Query parameters.
 	 * @return Number of entities matching given query.
 	 */
