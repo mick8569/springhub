@@ -67,7 +67,7 @@
 		<hibernate-entitymanager.version>${hibernate.version}</hibernate-entitymanager.version>
 
 		<!-- CGLib -->
-		<cglib-nodep.version>2.2.2</cglib-nodep.version>
+		<cglib-nodep.version>3.1</cglib-nodep.version>
 
 		<!-- Apache Commons -->
 		<commons-lang3.version>3.3.1</commons-lang3.version>
