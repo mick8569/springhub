@@ -59,7 +59,7 @@
 		<spring-tx.version>${spring.version}</spring-tx.version>
 		<spring-web.version>${spring.version}</spring-web.version>
 		<spring-webmvc.version>${spring.version}</spring-webmvc.version>
-		<spring-data-jpa.version>1.4.3.RELEASE</spring-data-jpa.version>
+		<spring-data-jpa.version>1.5.1.RELEASE</spring-data-jpa.version>
 
 		<!-- JPA2 - Hibernate -->
 		<jpa-2.0-api.version>1.0.1.Final</jpa-2.0-api.version>
