@@ -1,14 +1,19 @@
 package com.mjeanroy.springhub.dto;
 
+import static java.util.Collections.unmodifiableMap;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.beanutils.BeanMap;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.mjeanroy.springhub.commons.web.json.Json;
 import com.mjeanroy.springhub.models.AbstractModel;
-import org.apache.commons.beanutils.BeanMap;
-
-import java.io.Serializable;
-import java.util.Map;
 
 @SuppressWarnings("serial")
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -45,7 +50,7 @@ public class AbstractDto<MODEL extends AbstractModel> implements Serializable {
 	/**
 	 * Set {@link #id}
 	 *
-	 * @param id
+	 * @param id New {@link #id}
 	 */
 	public void setId(Long id) {
 		this.id = id;
@@ -67,7 +72,36 @@ public class AbstractDto<MODEL extends AbstractModel> implements Serializable {
 	 * @return Map containing DTO properties.
 	 */
 	public Map<String, Object> toMap() {
-		return new BeanMap(this);
+		Map<String, Object> mapStr = toModifiableMap();
+		return unmodifiableMap(mapStr);
+	}
+
+	/**
+	 * Serialize DTO to a map.
+	 *
+	 * @param excludes Properties to exclude.
+	 * @return Map containing DTO properties.
+	 */
+	public Map<String, Object> toMapExcluding(Collection<String> excludes) {
+		Map<String, Object> mapStr = toModifiableMap();
+		for (String exclude : excludes) {
+			mapStr.remove(exclude);
+		}
+		return unmodifiableMap(mapStr);
+	}
+
+	private Map<String, Object> toModifiableMap() {
+		Map<String, Object> mapStr = new HashMap<String, Object>();
+
+		Map<Object, Object> map = new BeanMap(this);
+		for (Map.Entry entry : map.entrySet()) {
+			String key = entry.getKey().toString();
+			mapStr.put(key, entry.getValue());
+		}
+
+		mapStr.remove("class");
+
+		return mapStr;
 	}
 
 	/**
