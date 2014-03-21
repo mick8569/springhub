@@ -84,7 +84,7 @@
 		<dozer.version>5.4.0</dozer.version>
 
 		<!-- Jackson (JSON Serialization) -->
-		<jackson.version>2.3.0</jackson.version>
+		<jackson.version>2.3.2</jackson.version>
 		<jackson-core.version>${jackson.version}</jackson-core.version>
 		<jackson-databind.version>${jackson.version}</jackson-databind.version>
 
