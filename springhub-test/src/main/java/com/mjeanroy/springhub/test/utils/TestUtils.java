@@ -1,5 +1,10 @@
 package com.mjeanroy.springhub.test.utils;
 
+import static org.apache.commons.io.FileUtils.copyFile;
+import static org.apache.commons.io.FileUtils.deleteQuietly;
+import static org.apache.commons.io.FileUtils.getTempDirectoryPath;
+import static org.apache.commons.io.FilenameUtils.normalize;
+
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
@@ -7,25 +12,61 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-public class TestUtils {
+public final class TestUtils {
 
 	private TestUtils() {
 	}
 
-	public static File copy(String filename) throws Exception {
-		URL url = TestUtils.class.getResource("/images/" + filename);
-		URI uri = url.toURI();
-		File file = (new File(uri));
+	/**
+	 * Copy file from classpath to temporary directory.
+	 *
+	 * @param filename Filename, related to classpath.
+	 * @return Result file (stored in temporary directory).
+	 */
+	public static File copy(String filename) {
+		return copyTo(filename, "");
+	}
 
-		File dest = new File("/tmp/" + filename);
-		org.apache.commons.io.FileUtils.copyFile(file, dest);
-		return dest;
+	/**
+	 * Copy file from classpath to temporary directory.
+	 *
+	 * @param filename Filename, related to classpath.
+	 * @param targetDirectory Target directory, related to temporary directory.
+	 * @return Result file (stored in temporary directory).
+	 */
+	public static File copyTo(String filename, String targetDirectory) {
+		try {
+			String from = "";
+			if (!filename.startsWith("/")) {
+				from = "/";
+			}
+
+			URL url = TestUtils.class.getResource(from + filename);
+			URI uri = url.toURI();
+			File file = (new File(uri));
+
+			String tmpPath = getTempDirectoryPath();
+			if (!tmpPath.endsWith("/")) {
+				tmpPath += "/";
+			}
+
+			String targetPath = tmpPath + targetDirectory;
+			if (!targetPath.endsWith("/")) {
+				targetPath += "/";
+			}
+
+			String targetFile = normalize(targetPath + filename);
+			File dest = new File(targetFile);
+			copyFile(file, dest);
+			return dest;
+		}
+		catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 
 	public static void delete(File file) throws Exception {
-		if (file.exists()) {
-			org.apache.commons.io.FileUtils.deleteQuietly(file);
-		}
+		deleteQuietly(file);
 	}
 
 	public static Date getDate(int year, int month, int dayOfMonth, int hour, int minutes, int seconds) {
