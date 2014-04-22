@@ -62,7 +62,7 @@
 		<spring-data-jpa.version>1.5.1.RELEASE</spring-data-jpa.version>
 
 		<!-- JPA2 - Hibernate -->
-		<jpa-2.0-api.version>1.0.1.Final</jpa-2.0-api.version>
+		<jpa-2.1-api.version>1.0.0.Final</jpa-2.1-api.version>
 		<hibernate.version>4.3.5.Final</hibernate.version>
 		<hibernate-entitymanager.version>${hibernate.version}</hibernate-entitymanager.version>
 
