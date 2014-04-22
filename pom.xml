@@ -50,7 +50,7 @@
 		<validation-api.version>1.1.0.Final</validation-api.version>
 
 		<!-- Spring Version -->
-		<spring.version>4.0.2.RELEASE</spring.version>
+		<spring.version>4.0.3.RELEASE</spring.version>
 		<spring-context.version>${spring.version}</spring-context.version>
 		<spring-jdbc.version>${spring.version}</spring-jdbc.version>
 		<spring-orm.version>${spring.version}</spring-orm.version>
