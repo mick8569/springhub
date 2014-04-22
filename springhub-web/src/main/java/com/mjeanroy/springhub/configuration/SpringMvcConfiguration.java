@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 @Configuration
-public class SpringMvcConfiguration extends WebMvcConfigurationSupport {
+public abstract class SpringMvcConfiguration extends WebMvcConfigurationSupport {
 
 	/** Class logger. */
 	private static final Logger log = LoggerFactory.getLogger(SpringMvcConfiguration.class);

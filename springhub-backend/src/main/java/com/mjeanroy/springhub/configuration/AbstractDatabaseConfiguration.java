@@ -19,14 +19,12 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import com.mjeanroy.springhub.dao.GenericDao;
-
 @Configuration
 @EnableTransactionManagement
-public abstract class DatabaseConfiguration {
+public abstract class AbstractDatabaseConfiguration {
 
 	/** Class logger. */
-	private static final Logger log = LoggerFactory.getLogger(DatabaseConfiguration.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractDatabaseConfiguration.class);
 
 	public abstract DataSource dataSource();
 
@@ -89,12 +87,6 @@ public abstract class DatabaseConfiguration {
 		txManager.setDataSource(dataSource());
 		txManager.afterPropertiesSet();
 		return txManager;
-	}
-
-	@Bean
-	public GenericDao genericDao() {
-		log.info("Initialize generic dao bean");
-		return new GenericDao();
 	}
 
 	/**
