@@ -2,6 +2,7 @@ package com.mjeanroy.springhub.configuration;
 
 import static java.util.Collections.emptyMap;
 
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.List;
@@ -77,6 +78,8 @@ public abstract class AbstractDatabaseConfiguration {
 			entityManagerFactory.setJpaPropertyMap(jpaProperties);
 		}
 
+		entityManagerFactory.afterPropertiesSet();
+
 		return entityManagerFactory;
 	}
 
@@ -85,6 +88,10 @@ public abstract class AbstractDatabaseConfiguration {
 		log.info("Configure JPA transaction manager");
 		JpaTransactionManager txManager = new JpaTransactionManager();
 		txManager.setDataSource(dataSource());
+
+		EntityManagerFactory object = entityManagerFactory().getObject();
+		txManager.setEntityManagerFactory(object);
+
 		txManager.afterPropertiesSet();
 		return txManager;
 	}
