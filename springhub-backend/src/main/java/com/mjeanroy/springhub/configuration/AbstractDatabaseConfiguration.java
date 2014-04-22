@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.dialect.MySQL5InnoDBDialect;
-import org.hibernate.ejb.HibernatePersistence;
+import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -63,7 +63,7 @@ public abstract class AbstractDatabaseConfiguration {
 		entityManagerFactory.setJpaVendorAdapter(vendorAdapter);
 
 		log.debug("- Configure entity manager persistence provider class");
-		entityManagerFactory.setPersistenceProviderClass(HibernatePersistence.class);
+		entityManagerFactory.setPersistenceProviderClass(HibernatePersistenceProvider.class);
 
 		log.debug("- Configure entity manager data source");
 		entityManagerFactory.setDataSource(dataSource);
