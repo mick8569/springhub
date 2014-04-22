@@ -63,7 +63,7 @@
 
 		<!-- JPA2 - Hibernate -->
 		<jpa-2.0-api.version>1.0.1.Final</jpa-2.0-api.version>
-		<hibernate.version>4.3.4.Final</hibernate.version>
+		<hibernate.version>4.3.5.Final</hibernate.version>
 		<hibernate-entitymanager.version>${hibernate.version}</hibernate-entitymanager.version>
 
 		<!-- CGLib -->
