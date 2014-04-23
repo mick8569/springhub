@@ -1,6 +1,7 @@
 package com.mjeanroy.springhub.configuration;
 
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
@@ -8,10 +9,10 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.dialect.MySQL5InnoDBDialect;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -22,20 +23,19 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @EnableTransactionManagement
-public abstract class AbstractDatabaseConfiguration {
+public class DatabaseConfiguration {
 
 	/** Class logger. */
-	private static final Logger log = LoggerFactory.getLogger(AbstractDatabaseConfiguration.class);
+	private static final Logger log = LoggerFactory.getLogger(DatabaseConfiguration.class);
 
-	public abstract DataSource dataSource();
+	@Autowired
+	private DataSource dataSource;
 
 	@Bean(destroyMethod = "destroy")
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
 		List<String> packages = packagesToScan();
 		int size = packages.size();
 		String[] array = packagesToScan().toArray(new String[size]);
-
-		DataSource dataSource = dataSource();
 
 		Class dialect = null;
 		boolean showSQL = showSQL();
@@ -87,7 +87,7 @@ public abstract class AbstractDatabaseConfiguration {
 	public PlatformTransactionManager transactionManager() {
 		log.info("Configure JPA transaction manager");
 		JpaTransactionManager txManager = new JpaTransactionManager();
-		txManager.setDataSource(dataSource());
+		txManager.setDataSource(dataSource);
 
 		EntityManagerFactory object = entityManagerFactory().getObject();
 		txManager.setEntityManagerFactory(object);
@@ -105,9 +105,8 @@ public abstract class AbstractDatabaseConfiguration {
 	 */
 	protected Class dialect(String driver) {
 		log.debug("Get dialect associated to driver {}", driver);
-		return driver.equalsIgnoreCase("com.mysql.jdbc.Driver") ?
-				MySQL5InnoDBDialect.class :
-				null;
+		log.debug("Default dialect is null");
+		return null;
 	}
 
 	/**
@@ -133,5 +132,7 @@ public abstract class AbstractDatabaseConfiguration {
 	 *
 	 * @return List of packages to scan.
 	 */
-	protected abstract List<String> packagesToScan();
+	protected List<String> packagesToScan() {
+		return singletonList("com");
+	}
 }
