@@ -52,6 +52,7 @@
 		<!-- Spring Version -->
 		<spring.version>4.0.3.RELEASE</spring.version>
 		<spring-context.version>${spring.version}</spring-context.version>
+		<spring-context-support.version>${spring.version}</spring-context-support.version>
 		<spring-jdbc.version>${spring.version}</spring-jdbc.version>
 		<spring-orm.version>${spring.version}</spring-orm.version>
 		<spring-aop.version>${spring.version}</spring-aop.version>
@@ -60,6 +61,9 @@
 		<spring-web.version>${spring.version}</spring-web.version>
 		<spring-webmvc.version>${spring.version}</spring-webmvc.version>
 		<spring-data-jpa.version>1.5.1.RELEASE</spring-data-jpa.version>
+
+		<!-- Java Mail API -->
+		<javax-mail.version>1.4.7</javax-mail.version>
 
 		<!-- JPA2 - Hibernate -->
 		<jpa-2.1-api.version>1.0.0.Final</jpa-2.1-api.version>
