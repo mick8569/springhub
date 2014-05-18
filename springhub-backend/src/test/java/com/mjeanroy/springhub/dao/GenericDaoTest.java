@@ -16,6 +16,7 @@ import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("unchecked")
 @RunWith(MockitoJUnitRunner.class)
 public class GenericDaoTest {
 

@@ -1,7 +1,9 @@
 package com.mjeanroy.springhub.dao;
 
-import static com.mjeanroy.springhub.commons.reflections.ReflectionUtils.getGenericType;
-import static org.springframework.transaction.annotation.Propagation.REQUIRED;
+import com.mjeanroy.springhub.exceptions.ReflectionException;
+import com.mjeanroy.springhub.models.entities.AbstractGenericEntity;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
@@ -15,11 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.mjeanroy.springhub.exceptions.ReflectionException;
-import com.mjeanroy.springhub.models.entities.AbstractGenericEntity;
+import static com.mjeanroy.springhub.commons.reflections.ReflectionUtils.getGenericType;
+import static org.springframework.transaction.annotation.Propagation.REQUIRED;
 
 /**
  * DAO implementation.
@@ -201,6 +200,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 *
 	 * @return Entities.
 	 */
+	@SuppressWarnings("unchecked")
 	public <K> Map<K, T> indexBy(Collection<K> values, String attribute) {
 		Collection<T> results = findIn(values, attribute);
 

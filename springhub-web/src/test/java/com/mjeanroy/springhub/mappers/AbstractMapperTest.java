@@ -21,6 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("unchecked")
 public class AbstractMapperTest {
 
 	private FooMapper fooMapper;
@@ -198,7 +199,6 @@ public class AbstractMapperTest {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void getEntities_should_return_entities_corresponding_to_dtos() {
 		// GIVEN
 		long id1 = 1L;

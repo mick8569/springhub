@@ -1,6 +1,6 @@
 package com.mjeanroy.springhub.test.configuration;
 
-import org.hibernate.ejb.HibernatePersistence;
+import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -45,7 +45,7 @@ public abstract class DaoConfiguration {
 	@Bean
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
 		LocalContainerEntityManagerFactoryBean entityManagerFactory = new LocalContainerEntityManagerFactoryBean();
-		entityManagerFactory.setPersistenceProviderClass(HibernatePersistence.class);
+		entityManagerFactory.setPersistenceProviderClass(HibernatePersistenceProvider.class);
 		entityManagerFactory.setDataSource(dataSource());
 
 		// Scan entities
