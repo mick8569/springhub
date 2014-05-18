@@ -85,7 +85,7 @@
 		<guava.version>17.0</guava.version>
 
 		<!-- Dozer -->
-		<dozer.version>5.4.0</dozer.version>
+		<dozer.version>5.5.1</dozer.version>
 
 		<!-- Jackson (JSON Serialization) -->
 		<jackson.version>2.3.3</jackson.version>
