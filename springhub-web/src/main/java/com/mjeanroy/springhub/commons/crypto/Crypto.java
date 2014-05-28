@@ -1,35 +1,47 @@
 package com.mjeanroy.springhub.commons.crypto;
 
-import org.apache.commons.codec.binary.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.net.URLDecoder.decode;
+import static java.net.URLEncoder.encode;
+import static java.security.MessageDigest.getInstance;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-public abstract class Crypto {
+import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public final class Crypto {
+
+	private Crypto() {
+	}
 
 	/** Class logger */
 	private static final Logger log = LoggerFactory.getLogger(Crypto.class);
 
-	/** MD5 Code */
+	/** MD5 Code. */
 	private static final String MD5 = "MD5";
 
-	/** SHA-256 Code */
+	/** SHA-256 Code. */
 	private static final String SHA256 = "SHA-256";
 
-	/** AES Code */
+	/** AES Code. */
 	private static final String AES = "AES";
 
+	/** Array of alpha numerics characters. */
+	private static final char[] alphaNumerics = new char[]{
+			'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+			'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+	};
+
 	/**
-	 * Encrypt string with md5 encrypter.
+	 * Encrypt string with md5 encryption.
 	 *
 	 * @param str String to encrypt.
 	 * @return Encrypted string.
@@ -39,7 +51,7 @@ public abstract class Crypto {
 	}
 
 	/**
-	 * Encrypt string with SHA-256 encrypter.
+	 * Encrypt string with SHA-256 encryption.
 	 *
 	 * @param str String to encrypt.
 	 * @return Encrypted string.
@@ -51,7 +63,7 @@ public abstract class Crypto {
 	/**
 	 * Encrypt string with AES encryption.
 	 *
-	 * @param data   Data to encrypt.
+	 * @param data Data to encrypt.
 	 * @param secret Secret use for encryption.
 	 * @return Encrypted data.
 	 */
@@ -62,7 +74,8 @@ public abstract class Crypto {
 			c.init(Cipher.ENCRYPT_MODE, key);
 			byte[] encVal = c.doFinal(data.getBytes());
 			return new String(Base64.encodeBase64(encVal));
-		} catch (Exception ex) {
+		}
+		catch (Exception ex) {
 			log.error(ex.getMessage(), ex);
 			return data;
 		}
@@ -71,8 +84,8 @@ public abstract class Crypto {
 	/**
 	 * Encrypt string with AES encryption and URL encode result in UTF-8.
 	 *
-	 * @param data   Data to encrypt.
-	 * @param salt   Salt use to encrypt data.
+	 * @param data Data to encrypt.
+	 * @param salt Salt use to encrypt data.
 	 * @param secret Secret use for encryption.
 	 * @return Encrypted data.
 	 */
@@ -83,14 +96,15 @@ public abstract class Crypto {
 	/**
 	 * Encrypt string with AES encryption and URL encode result in UTF-8.
 	 *
-	 * @param data   Data to encrypt.
+	 * @param data Data to encrypt.
 	 * @param secret Secret use for encryption.
 	 * @return Encrypted data.
 	 */
 	public static String encryptAES_UTF8(String data, String secret) {
 		try {
-			return URLEncoder.encode(Crypto.encryptAES(data, secret), "UTF-8");
-		} catch (Exception ex) {
+			return encode(Crypto.encryptAES(data, secret), "UTF-8");
+		}
+		catch (Exception ex) {
 			log.error(ex.getMessage(), ex);
 			return data;
 		}
@@ -99,8 +113,8 @@ public abstract class Crypto {
 	/**
 	 * Encrypt string with AES encryption.
 	 *
-	 * @param data   Data to encrypt.
-	 * @param salt   Salt use to encrypt data.
+	 * @param data Data to encrypt.
+	 * @param salt Salt use to encrypt data.
 	 * @param secret Secret use for encryption.
 	 * @return Encrypted data.
 	 */
@@ -112,7 +126,7 @@ public abstract class Crypto {
 	 * Decrypt string with AES encryption.
 	 *
 	 * @param encryptedData Data to decrypt.
-	 * @param secret        Secret use for decryption.
+	 * @param secret Secret use for decryption.
 	 * @return Decrypted data.
 	 */
 	public static String decryptAES(String encryptedData, String secret) {
@@ -123,7 +137,8 @@ public abstract class Crypto {
 			byte[] decodedValue = Base64.decodeBase64(encryptedData.getBytes());
 			byte[] decValue = c.doFinal(decodedValue);
 			return new String(decValue);
-		} catch (Exception ex) {
+		}
+		catch (Exception ex) {
 			log.error(ex.getMessage(), ex);
 			return encryptedData;
 		}
@@ -151,65 +166,95 @@ public abstract class Crypto {
 	}
 
 	/**
+	 * Build random string with only alpha numeric letters and with size of 32.
+	 *
+	 * @return Random string.
+	 */
+	public static String generateAlphaNumericRandom() {
+		return generateAlphaNumericRandom(32);
+	}
+
+	/**
+	 * Build random string with only alpha numeric letters and with size of 32.
+	 *
+	 * @param size Size of string.
+	 * @return Random string.
+	 */
+	public static String generateAlphaNumericRandom(int size) {
+		SecureRandom random = new SecureRandom();
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < size; ++i) {
+			int index = random.nextInt(alphaNumerics.length);
+			sb.append(alphaNumerics[index]);
+		}
+		return sb.toString();
+	}
+
+	/**
 	 * Encrypt string with specified algorithm.
 	 *
-	 * @param str       String to encrypt.
+	 * @param str String to encrypt.
 	 * @param algorithm Algorithm.
 	 * @return Encrypted string.
 	 */
 	private static String crypt(String str, String algorithm) {
 		try {
-			MessageDigest md = MessageDigest.getInstance(algorithm);
+			MessageDigest md = getInstance(algorithm);
 			md.update(str.getBytes());
 
 			byte byteData[] = md.digest();
 
 			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < byteData.length; i++) {
-				sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+			for (byte aByteData : byteData) {
+				sb.append(Integer.toString((aByteData & 0xff) + 0x100, 16).substring(1));
 			}
 			return sb.toString();
-		} catch (NoSuchAlgorithmException ex) {
+		}
+		catch (NoSuchAlgorithmException ex) {
 			log.error(ex.getMessage(), ex);
 			return null;
 		}
 	}
 
 	/**
-	 * Decript string encrypted with AES encryption. <br />
+	 * Decrypt string encrypted with AES encryption.
 	 * String is first URL decoded using UTF-8 encoding and then decrypted using salt and secret.
 	 *
 	 * @param encrypted String to decrypt.
-	 * @param salt      Salt used to encrypt string.
-	 * @param secret    Secret used to encrypt string.
+	 * @param salt Salt used to encrypt string.
+	 * @param secret Secret used to encrypt string.
 	 * @return Decrypted string.
 	 */
 	public static String decryptAES_UTF8(String encrypted, String salt, String secret) {
 		try {
-			String value = URLDecoder.decode(encrypted, "UTF-8");
-			String decrypted = Crypto.decryptAES(value, secret);
+			String value = decode(encrypted, "UTF-8");
+			String decrypted = decryptAES(value, secret);
 			if (!decrypted.startsWith(salt)) {
 				return null;
 			}
 			return decrypted.substring(salt.length());
-		} catch (Exception ex) {
+		}
+		catch (Exception ex) {
+			log.debug(ex.getMessage(), ex);
 			return encrypted;
 		}
 	}
 
 	/**
-	 * Decript string encrypted with AES encryption. <br />
+	 * Decrypt string encrypted with AES encryption. <br />
 	 * String is first URL decoded using UTF-8 encoding and then decrypted using secret.
 	 *
 	 * @param encrypted String to decrypt.
-	 * @param secret    Secret used to encrypt string.
+	 * @param secret Secret used to encrypt string.
 	 * @return Decrypted string.
 	 */
 	public static String decryptAES_UTF8(String encrypted, String secret) {
 		try {
-			String value = URLDecoder.decode(encrypted, "UTF-8");
-			return Crypto.decryptAES(value, secret);
-		} catch (Exception ex) {
+			String value = decode(encrypted, "UTF-8");
+			return decryptAES(value, secret);
+		}
+		catch (Exception ex) {
+			log.debug(ex.getMessage(), ex);
 			return encrypted;
 		}
 	}
