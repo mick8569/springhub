@@ -1,26 +1,30 @@
 package com.mjeanroy.springhub.commons.web.utils;
 
-import com.mjeanroy.springhub.commons.crypto.Crypto;
+import lombok.Getter;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static com.mjeanroy.springhub.commons.crypto.Crypto.decryptAES_UTF8;
+import static com.mjeanroy.springhub.commons.crypto.Crypto.encryptAES_UTF8;
+
 public abstract class CookieSession {
 
 	/** Http Request */
-	private HttpServletRequest request;
+	private final HttpServletRequest request;
 
-	/** Http Response  */
-	private HttpServletResponse response;
+	/** Http Response */
+	private final HttpServletResponse response;
 
 	/** If cookie is visible to http only */
-	private boolean httpOnly;
+	@Getter
+	private final boolean httpOnly;
 
 	/**
 	 * Build http session from http request and response.
 	 *
-	 * @param request Http request.
+	 * @param request  Http request.
 	 * @param response Http response.
 	 */
 	public CookieSession(HttpServletRequest request, HttpServletResponse response) {
@@ -41,7 +45,7 @@ public abstract class CookieSession {
 	 * @return Decrypted value.
 	 */
 	private String decryptCookieValue(String encrypted) {
-		return Crypto.decryptAES_UTF8(encrypted, salt(), secret());
+		return decryptAES_UTF8(encrypted, salt(), secret());
 	}
 
 	/**
@@ -51,7 +55,7 @@ public abstract class CookieSession {
 	 * @return Encrypted value.
 	 */
 	private String encryptCookieValue(String value) {
-		return Crypto.encryptAES_UTF8(value, salt(), secret());
+		return encryptAES_UTF8(value, salt(), secret());
 	}
 
 	/**
@@ -71,7 +75,7 @@ public abstract class CookieSession {
 	/**
 	 * Put new item in session.
 	 *
-	 * @param name Name of item.
+	 * @param name  Name of item.
 	 * @param value Value of item.
 	 */
 	public Cookie put(String name, String value) {
@@ -81,8 +85,8 @@ public abstract class CookieSession {
 	/**
 	 * Put new item in session.
 	 *
-	 * @param name Name of item.
-	 * @param value Value of item.
+	 * @param name      Name of item.
+	 * @param value     Value of item.
 	 * @param permanent True to use a permanent session, aka session will not be clear when browser will close.
 	 */
 	public Cookie put(String name, String value, boolean permanent) {
@@ -91,9 +95,11 @@ public abstract class CookieSession {
 		cookie.setPath("/");
 		cookie.setMaxAge(-1);
 		cookie.setHttpOnly(httpOnly);
+
 		if (permanent) {
 			cookie.setMaxAge(Integer.MAX_VALUE);
 		}
+
 		response.addCookie(cookie);
 		return cookie;
 	}
@@ -118,15 +124,18 @@ public abstract class CookieSession {
 	 */
 	public String get(String name) {
 		Cookie[] cookies = request.getCookies();
-		if ((cookies == null) || (cookies.length == 0)) {
+
+		if (cookies == null || (cookies.length == 0)) {
 			return null;
 		}
+
 		for (Cookie cookie : cookies) {
 			if (cookie.getName().equals(name)) {
 				String value = cookie.getValue();
 				return decryptCookieValue(value);
 			}
 		}
+
 		return null;
 	}
 
@@ -141,14 +150,5 @@ public abstract class CookieSession {
 		cookie.setPath("/");
 		cookie.setHttpOnly(httpOnly);
 		response.addCookie(cookie);
-	}
-
-	/**
-	 * Get {@link #httpOnly}
-	 *
-	 * @return {@link #httpOnly}
-	 */
-	public boolean getHttpOnly() {
-		return httpOnly;
 	}
 }
