@@ -1,12 +1,14 @@
 package com.mjeanroy.springhub.controllers;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.mjeanroy.springhub.commons.web.utils.Browser;
+import com.mjeanroy.springhub.exceptions.DisconnectedException;
+import com.mjeanroy.springhub.exceptions.EmailUniqueException;
+import com.mjeanroy.springhub.exceptions.EntityNotFoundException;
+import com.mjeanroy.springhub.exceptions.NotImplementedException;
+import com.mjeanroy.springhub.exceptions.RequestParameterException;
+import com.mjeanroy.springhub.exceptions.ResourceNotFoundException;
+import com.mjeanroy.springhub.exceptions.UnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,15 +22,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.mjeanroy.springhub.commons.web.utils.Browser;
-import com.mjeanroy.springhub.exceptions.DisconnectedException;
-import com.mjeanroy.springhub.exceptions.EmailUniqueException;
-import com.mjeanroy.springhub.exceptions.EntityNotFoundException;
-import com.mjeanroy.springhub.exceptions.NotImplementedException;
-import com.mjeanroy.springhub.exceptions.RequestParameterException;
-import com.mjeanroy.springhub.exceptions.ResourceNotFoundException;
-import com.mjeanroy.springhub.exceptions.UnauthorizedException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 public abstract class AbstractController {
@@ -36,6 +35,7 @@ public abstract class AbstractController {
 	/** Class logger */
 	private static final Logger log = LoggerFactory.getLogger(AbstractController.class);
 
+	@Deprecated
 	@Autowired
 	protected HttpServletRequest request;
 
@@ -44,6 +44,7 @@ public abstract class AbstractController {
 	 *
 	 * @return Browser details.
 	 */
+	@Deprecated
 	protected Browser browser() {
 		return new Browser(request);
 	}
@@ -53,6 +54,7 @@ public abstract class AbstractController {
 	 *
 	 * @return True if client browser is Internet Explorer less or equals to version 9.
 	 */
+	@Deprecated
 	protected boolean ltIE9() {
 		return new Browser(request).ltIE9();
 	}
@@ -62,6 +64,7 @@ public abstract class AbstractController {
 	 *
 	 * @return True if client browser is Internet Explorer less or equals to version 8.
 	 */
+	@Deprecated
 	protected boolean ltIE8() {
 		return new Browser(request).ltIE8();
 	}
@@ -71,6 +74,7 @@ public abstract class AbstractController {
 	 *
 	 * @return True if client browser is Internet Explorer less or equals to version 7.
 	 */
+	@Deprecated
 	protected boolean ltIE7() {
 		return new Browser(request).ltIE7();
 	}
@@ -80,6 +84,7 @@ public abstract class AbstractController {
 	 *
 	 * @return True if client browser is Internet Explorer less or equals to version 6.
 	 */
+	@Deprecated
 	protected boolean ltIE6() {
 		return new Browser(request).ltIE6();
 	}

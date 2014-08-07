@@ -11,73 +11,76 @@ import static java.lang.Integer.parseInt;
 public class Browser {
 
 	/** User agent of client */
-	private String userAgent;
+	private final String userAgent;
 
 	/** Company of client browser */
-	private Company company;
+	private final Company company;
 
 	/** Full version of client browser */
-	private String version;
+	private final String version;
 
 	/** Major version of client browser */
-	private String mainVersion;
+	private final String mainVersion;
 
 	/** Minor version of client browser */
-	private String minorVersion;
+	private final String minorVersion;
 
 	public Browser(HttpServletRequest request) {
 		super();
 
 		// User agent may be null
 		userAgent = firstNonNull(request.getHeader("User-Agent"), "");
-		initializeCompany();
-		initializeVersion();
+
+		company = parseCompany();
+		version = parseVersion();
+		mainVersion = parseMainVersion();
+		minorVersion = parseMinorVersion();
 	}
 
-	/** Parse version from user agent label. */
-	private void initializeVersion() {
+	/**
+	 * Parse version from user agent label.
+	 *
+	 * @return Browser version.
+	 */
+	private String parseVersion() {
+		return company.parseVersion(userAgent.toLowerCase());
+	}
+
+	/**
+	 * Check if version is empty.
+	 *
+	 * @return True if version field is empty, false otherwise.
+	 */
+	private boolean isVersionEmpty() {
+		return version == null || version.isEmpty();
+	}
+
+	/**
+	 * Parse browser major version.
+	 *
+	 * @return Browser major version.
+	 */
+	private String parseMainVersion() {
+		return isVersionEmpty() ? null : version.substring(0, version.indexOf("."));
+	}
+
+	/**
+	 * Parse browser minor version.
+	 *
+	 * @return Browser minor version.
+	 */
+	private String parseMinorVersion() {
+		return isVersionEmpty() ? null : version.substring(version.indexOf(".") + 1).trim();
+	}
+
+	/**
+	 * Parse browser company.
+	 *
+	 * @return Browser company.
+	 */
+	private Company parseCompany() {
 		String ua = userAgent.toLowerCase();
-
-		if (company.equals(Company.MICROSOFT)) {
-			String str = ua.substring(ua.indexOf("msie") + 5);
-			version = str.substring(0, str.indexOf(";"));
-
-		} else if (company.equals(Company.GOOGLE)) {
-			version = getVersion(ua, "chrome/([0-9\\.]+)");
-
-		} else if (company.equals(Company.MOZILLA)) {
-			version = getVersion(ua, "firefox/([0-9\\.]+)");
-
-		} else if (company.equals(Company.APPLE)) {
-			version = getVersion(ua, "version/([0-9\\.]+)");
-
-		} else if (company.equals(Company.OPERA)) {
-			version = getVersion(ua, "version/([0-9\\.]+)");
-
-		} else if (!ua.isEmpty()) {
-			int tmpPos;
-			String tmpString = (ua.substring(tmpPos = (ua.indexOf("/")) + 1, tmpPos + ua.indexOf(" "))).trim();
-			version = tmpString.substring(0, tmpString.indexOf(" "));
-		}
-
-		if (version != null && !version.isEmpty()) {
-			mainVersion = version.substring(0, version.indexOf("."));
-			minorVersion = version.substring(version.indexOf(".") + 1).trim();
-		}
-	}
-
-	private String getVersion(String ua, String pattern) {
-		Pattern p = Pattern.compile(pattern);
-		Matcher m = p.matcher(ua);
-		if (m.find()) {
-			return m.group(1);
-		}
-		return null;
-	}
-
-	private void initializeCompany() {
-		String ua = userAgent.toLowerCase();
-		company = findByUserAgent(ua);
+		return findByUserAgent(ua);
 	}
 
 	/**
@@ -184,23 +187,51 @@ public class Browser {
 	}
 
 	public static enum Company {
-		MICROSOFT("msie", "Internet Explorer"),
-		GOOGLE("chrome", "Google Chrome"),
-		MOZILLA("firefox", "Firefox"),
-		OPERA("opera", "Opera"),
-		APPLE("safari", "Safari"),
-		UNKNOWN;
+		MICROSOFT("msie", "Internet Explorer", new UserAgentParser() {
+			@Override
+			public String parse(String userAgent) {
+				String str = userAgent.substring(userAgent.indexOf("msie") + 5);
+				return str.substring(0, str.indexOf(";"));
+			}
+		}),
 
-		private String patternUserAgent;
+		GOOGLE("chrome", "Google Chrome", new PatternUserAgentParser("chrome/([0-9\\.]+)")),
 
-		private String browserName;
+		MOZILLA("firefox", "Firefox", new PatternUserAgentParser("firefox/([0-9\\.]+)")),
 
-		private Company() {
+		OPERA("opera", "Opera", new PatternUserAgentParser("version/([0-9\\.]+)")),
+
+		APPLE("safari", "Safari", new PatternUserAgentParser("version/([0-9\\.]+)")),
+
+		UNKNOWN(new UserAgentParser() {
+			@Override
+			public String parse(String userAgent) {
+				if (userAgent.isEmpty()) {
+					return null;
+				}
+
+				int tmpPos;
+				String tmpString = (userAgent.substring(tmpPos = (userAgent.indexOf("/")) + 1, tmpPos + userAgent.indexOf(" "))).trim();
+				return tmpString.substring(0, tmpString.indexOf(" "));
+			}
+		});
+
+		private final String patternUserAgent;
+
+		private final String browserName;
+
+		private final UserAgentParser parser;
+
+		private Company(UserAgentParser parser) {
+			this.patternUserAgent = null;
+			this.browserName = null;
+			this.parser = parser;
 		}
 
-		private Company(String patternUserAgent, String browserName) {
+		private Company(String patternUserAgent, String browserName, UserAgentParser parser) {
 			this.patternUserAgent = patternUserAgent;
 			this.browserName = browserName;
+			this.parser = parser;
 		}
 
 		public static Company findByUserAgent(String ua) {
@@ -217,5 +248,30 @@ public class Browser {
 		public String getBrowserName() {
 			return browserName;
 		}
+
+		private String parseVersion(String userAgent) {
+			return parser.parse(userAgent);
+		}
 	}
+
+	private interface UserAgentParser {
+		String parse(String userAgent);
+	}
+
+	private static class PatternUserAgentParser implements UserAgentParser {
+
+		private final String pattern;
+
+		public PatternUserAgentParser(String pattern) {
+			this.pattern = pattern;
+		}
+
+		@Override
+		public String parse(String userAgent) {
+			Pattern p = Pattern.compile(pattern);
+			Matcher m = p.matcher(userAgent);
+			return m.find() ? m.group(1) : null;
+		}
+	}
+
 }
