@@ -23,7 +23,7 @@ public class BrowserArgumentConfiguration extends WebMvcConfigurerAdapter {
 	}
 
 	@Bean
-	private BrowserWebArgumentResolver browserWebArgumentResolver() {
+	public BrowserWebArgumentResolver browserWebArgumentResolver() {
 		return new BrowserWebArgumentResolver();
 	}
 }

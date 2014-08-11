@@ -30,7 +30,7 @@ public class SessionArgumentConfiguration extends WebMvcConfigurerAdapter {
 	}
 
 	@Bean
-	private SessionWebArgumentResolver sessionArgumentResolver() {
+	public SessionWebArgumentResolver sessionArgumentResolver() {
 		String salt = salt();
 		String secret = secret();
 		return new SessionWebArgumentResolver(salt, secret);

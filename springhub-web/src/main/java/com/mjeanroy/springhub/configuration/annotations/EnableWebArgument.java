@@ -1,6 +1,6 @@
 package com.mjeanroy.springhub.configuration.annotations;
 
-import com.mjeanroy.springhub.configuration.resolvers.BrowserWebArgumentResolver;
+import com.mjeanroy.springhub.configuration.BrowserArgumentConfiguration;
 import com.mjeanroy.springhub.configuration.SessionArgumentConfiguration;
 import org.springframework.context.annotation.Import;
 
@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Import({
-		BrowserWebArgumentResolver.class,
+		BrowserArgumentConfiguration.class,
 		SessionArgumentConfiguration.class
 })
 public @interface EnableWebArgument {
