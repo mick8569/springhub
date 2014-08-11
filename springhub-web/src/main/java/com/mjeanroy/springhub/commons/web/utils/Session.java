@@ -17,20 +17,7 @@ public class Session extends CookieSession {
 	 * @param request  Http Request.
 	 * @param response Http Response.
 	 * @param salt     Application Salt.
-	 * @param secret   Application Secret Key?
-	 */
-	@Deprecated
-	public Session(HttpServletRequest request, HttpServletResponse response, String salt, String secret) {
-		this(request, response, salt.getBytes(), secret.getBytes());
-	}
-
-	/**
-	 * Build new session object.
-	 *
-	 * @param request  Http Request.
-	 * @param response Http Response.
-	 * @param salt     Application Salt.
-	 * @param secret   Application Secret Key?
+	 * @param secret   Application Secret Key.
 	 */
 	public Session(HttpServletRequest request, HttpServletResponse response, byte[] salt, byte[] secret) {
 		super(request, response, true);

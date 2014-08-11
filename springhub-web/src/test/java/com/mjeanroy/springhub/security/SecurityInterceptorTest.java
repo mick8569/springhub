@@ -1,101 +1,100 @@
 package com.mjeanroy.springhub.security;
 
-import org.fest.assertions.api.Assertions;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.web.method.HandlerMethod;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.web.method.HandlerMethod;
+
+@SuppressWarnings("unchecked")
 public class SecurityInterceptorTest {
 
-	@Test
-	public void testSecurityInterceptor_shouldThrow401() throws Exception {
-		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-		HandlerMethod handler = Mockito.mock(HandlerMethod.class);
+	private AuthenticationService authenticationService;
 
-		Security securityAnnotation = Mockito.mock(Security.class);
-		Mockito.when(handler.getMethodAnnotation(Security.class)).thenReturn(securityAnnotation);
+	private SecurityInterceptor securityInterceptor;
 
-		SecurityInterceptor interceptor = new SecurityInterceptor();
-		interceptor.setSalt("fnt");
-		interceptor.setSecret("ag1yxzwlmryjhp%o");
-		interceptor.setCookieName("SESSIONID");
-
-		boolean result = interceptor.preHandle(request, response, handler);
-
-		Assertions.assertThat(result).isFalse();
-		Mockito.verify(response).setStatus(401);
+	@Before
+	public void setUp() {
+		authenticationService = mock(AuthenticationService.class);
+		securityInterceptor = new SecurityInterceptor(authenticationService, "fnt".getBytes(), "ag1yxzwlmryjhp%o".getBytes(), "SESSIONID");
 	}
 
 	@Test
-	public void testSecurityInterceptor_shouldRedirect() throws Exception {
-		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-		HandlerMethod handler = Mockito.mock(HandlerMethod.class);
+	public void testSecurityInterceptor_should_throw_401_without_cookie() throws Exception {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		HandlerMethod handler = mock(HandlerMethod.class);
 
-		Security securityAnnotation = Mockito.mock(Security.class);
-		Mockito.when(securityAnnotation.redirectTo()).thenReturn("/login");
-		Mockito.when(handler.getMethodAnnotation(Security.class)).thenReturn(securityAnnotation);
+		Security securityAnnotation = mock(Security.class);
+		when(handler.getMethodAnnotation(Security.class)).thenReturn(securityAnnotation);
 
-		SecurityInterceptor interceptor = new SecurityInterceptor();
-		interceptor.setSalt("fnt");
-		interceptor.setSecret("ag1yxzwlmryjhp%o");
-		interceptor.setCookieName("SESSIONID");
+		boolean result = securityInterceptor.preHandle(request, response, handler);
 
-		boolean result = interceptor.preHandle(request, response, handler);
-
-		Assertions.assertThat(result).isFalse();
-		Mockito.verify(response).sendRedirect("/login");
+		assertThat(result).isFalse();
+		verify(response).setStatus(401);
 	}
 
 	@Test
-	public void testSecurityInterceptor_shouldAuthenticate() throws Exception {
-		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-		HandlerMethod handler = Mockito.mock(HandlerMethod.class);
+	public void testSecurityInterceptor_should_redirect_without_cookie() throws Exception {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		HandlerMethod handler = mock(HandlerMethod.class);
+
+		Security securityAnnotation = mock(Security.class);
+		when(securityAnnotation.redirectTo()).thenReturn("/login");
+		when(handler.getMethodAnnotation(Security.class)).thenReturn(securityAnnotation);
+
+		boolean result = securityInterceptor.preHandle(request, response, handler);
+
+		assertThat(result).isFalse();
+		verify(response).sendRedirect("/login");
+	}
+
+	@Test
+	public void testSecurityInterceptor_should_authenticate_with_valid_cookie() throws Exception {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		HandlerMethod handler = mock(HandlerMethod.class);
 
 		Security securityAnnotation = Mockito.mock(Security.class);
-		Mockito.when(securityAnnotation.redirectTo()).thenReturn("/login");
-		Mockito.when(handler.getMethodAnnotation(Security.class)).thenReturn(securityAnnotation);
+		when(securityAnnotation.redirectTo()).thenReturn("/login");
+		when(handler.getMethodAnnotation(Security.class)).thenReturn(securityAnnotation);
 
 		Cookie cookie1 = new Cookie("SESSIONID", "ZvnSZ7HTSao9e%2FmyIKPDcw%3D%3D");
 		Cookie cookie2 = new Cookie("bar", "ZvnSZ7HTSao9e%2FmyIKPDcw");
 		Cookie[] cookies = {cookie1, cookie2};
-		Mockito.when(request.getCookies()).thenReturn(cookies);
+		when(request.getCookies()).thenReturn(cookies);
 
-		SecurityInterceptor interceptor = new SecurityInterceptor();
-		interceptor.setSalt("fnt");
-		interceptor.setSecret("ag1yxzwlmryjhp%o");
-		interceptor.setCookieName("SESSIONID");
+		when(authenticationService.parseAuthenticationId("1".toCharArray())).thenReturn(1L);
 
-		boolean result = interceptor.preHandle(request, response, handler);
+		boolean result = securityInterceptor.preHandle(request, response, handler);
 
-		Assertions.assertThat(result).isTrue();
-		Mockito.verify(response, Mockito.never()).sendRedirect(Mockito.anyString());
-		Mockito.verify(response, Mockito.never()).setStatus(Mockito.anyInt());
+		assertThat(result).isTrue();
+		verify(authenticationService).parseAuthenticationId("1".toCharArray());
+		verify(response, never()).sendRedirect(anyString());
+		verify(response, never()).setStatus(anyInt());
 	}
 
 	@Test
-	public void testSecurityInterceptor_noSecurity() throws Exception {
-		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-		HandlerMethod handler = Mockito.mock(HandlerMethod.class);
+	public void testSecurityInterceptor_without_security_should_continue() throws Exception {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		HandlerMethod handler = mock(HandlerMethod.class);
 
-		Mockito.when(handler.getMethodAnnotation(Security.class)).thenReturn(null);
+		when(handler.getMethodAnnotation(Security.class)).thenReturn(null);
 
-		SecurityInterceptor interceptor = new SecurityInterceptor();
-		interceptor.setSalt("fnt");
-		interceptor.setSecret("ag1yxzwlmryjhp%o");
-		interceptor.setCookieName("SESSIONID");
+		boolean result = securityInterceptor.preHandle(request, response, handler);
 
-		boolean result = interceptor.preHandle(request, response, handler);
-
-		Assertions.assertThat(result).isTrue();
-		Mockito.verify(response, Mockito.never()).sendRedirect(Mockito.anyString());
-		Mockito.verify(response, Mockito.never()).setStatus(Mockito.anyInt());
+		assertThat(result).isTrue();
+		verify(response, never()).sendRedirect(anyString());
+		verify(response, never()).setStatus(anyInt());
 	}
 }
