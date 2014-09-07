@@ -1,7 +1,6 @@
 package com.mjeanroy.springhub.dao;
 
-import com.mjeanroy.springhub.exceptions.ReflectionException;
-import com.mjeanroy.springhub.models.entities.AbstractGenericEntity;
+import com.mjeanroy.springhub.models.entities.JPAEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,7 +10,6 @@ import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
-import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +24,7 @@ import static org.springframework.transaction.annotation.Propagation.REQUIRED;
  * @param <T> Entity class.
  */
 @Repository
-public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
+public abstract class AbstractGenericDao<T extends JPAEntity> {
 
 	/** Parameterized class */
 	protected Class<T> type = null;
@@ -71,6 +69,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 * Check if an entity is managed by the persistence context.
 	 *
 	 * @param o Entity to check.
+	 *
 	 * @return True if entity is managed, false otherwise.
 	 */
 	public boolean isManaged(T o) {
@@ -91,6 +90,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 * Merge an entity into the current persistence context.
 	 *
 	 * @param o Entity to merge.
+	 *
 	 * @return Merged entity.
 	 */
 	@Transactional(readOnly = false, propagation = REQUIRED)
@@ -130,7 +130,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 * Lock an entity instance that is contained in the persistence
 	 * context with the specified lock mode type
 	 *
-	 * @param o Entity to lock.
+	 * @param o            Entity to lock.
 	 * @param lockModeType Lock type.
 	 */
 	public void lock(T o, LockModeType lockModeType) {
@@ -141,6 +141,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 * Find an entity by its primary key.
 	 *
 	 * @param primaryKey Primary key.
+	 *
 	 * @return Entity.
 	 */
 	public T find(Long primaryKey) {
@@ -151,6 +152,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 * Get reference to an instance, whose state may be lazily fetched.
 	 *
 	 * @param primaryKey Primary key.
+	 *
 	 * @return Reference to the entity.
 	 */
 	public T getReference(Long primaryKey) {
@@ -201,37 +203,17 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 * @return Entities.
 	 */
 	@SuppressWarnings("unchecked")
-	public <K> Map<K, T> indexBy(Collection<K> values, String attribute) {
-		Collection<T> results = findIn(values, attribute);
+	public Map<Long, T> indexById(Collection<Long> values) {
+		Collection<T> results = findIn(values, "id");
 
-		Map<K, T> map = new HashMap<K, T>();
+		Map<Long, T> map = new HashMap<Long, T>();
 
-		try {
-			for (T result : results) {
-				Field field = result.getClass().getDeclaredField(attribute);
-				field.setAccessible(true);
-				K value = (K) field.get(result);
-				map.put(value, result);
-			}
-		}
-		catch (NoSuchFieldException ex) {
-			throw new ReflectionException(ex);
-		}
-		catch (IllegalAccessException ex) {
-			throw new ReflectionException(ex);
+		for (T result : results) {
+			Long value = result.getId();
+			map.put(value, result);
 		}
 
 		return map;
-	}
-
-	/**
-	 * Find all entities where 'id' attribute value is in given values.
-	 * A map indexed by 'id' value is returned.
-	 *
-	 * @return Entities.
-	 */
-	public <K> Map<K, T> indexById(Collection<K> values) {
-		return indexBy(values, "id");
 	}
 
 	/**
@@ -251,6 +233,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 * Find list of entities for a given query.
 	 *
 	 * @param query Query.
+	 *
 	 * @return All entities matching given query.
 	 */
 	public List<T> getEntityList(CharSequence query) {
@@ -262,6 +245,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 *
 	 * @param query Query.
 	 * @param limit Maximum number of results.
+	 *
 	 * @return All entities matching given query.
 	 */
 	public List<T> getEntityList(CharSequence query, int limit) {
@@ -271,8 +255,9 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	/**
 	 * Find list of entities for a given query with given parameters.
 	 *
-	 * @param query Query.
+	 * @param query  Query.
 	 * @param params Query parameters.
+	 *
 	 * @return All entities matching given query.
 	 */
 	public List<T> getEntityList(CharSequence query, Map<String, Object> params) {
@@ -282,9 +267,10 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	/**
 	 * Find list of entities for a given query with given parameters and limit number of results to a given number.
 	 *
-	 * @param query Query.
+	 * @param query  Query.
 	 * @param params Query parameters.
-	 * @param limit Maximum number of results.
+	 * @param limit  Maximum number of results.
+	 *
 	 * @return All entities matching given query.
 	 */
 	public List<T> getEntityList(CharSequence query, Map<String, Object> params, int limit) {
@@ -307,6 +293,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 * Get all entities for a given query.
 	 *
 	 * @param query Query.
+	 *
 	 * @return All entities matching given query.
 	 */
 	@SuppressWarnings("unchecked")
@@ -318,6 +305,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 * Find entity for a given query.
 	 *
 	 * @param query Query.
+	 *
 	 * @return Entity, null if no entity match given query.
 	 */
 	public T getSingleEntity(CharSequence query) {
@@ -327,8 +315,9 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	/**
 	 * Find entity for a given query.
 	 *
-	 * @param query Query.
+	 * @param query  Query.
 	 * @param params Query parameters.
+	 *
 	 * @return Entity, null if no entity match given query.
 	 */
 	public T getSingleEntity(CharSequence query, Map<String, ?> params) {
@@ -345,6 +334,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 * Find entity for a given query.
 	 *
 	 * @param query Query.
+	 *
 	 * @return Entity, null if no entity match given query.
 	 */
 	@SuppressWarnings("unchecked")
@@ -361,6 +351,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 * Count entities matching given query.
 	 *
 	 * @param query Query.
+	 *
 	 * @return Number of entities matching given query.
 	 */
 	public long getCount(CharSequence query) {
@@ -370,8 +361,9 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	/**
 	 * Count entities matching given query.
 	 *
-	 * @param query Query.
+	 * @param query  Query.
 	 * @param params Query parameters.
+	 *
 	 * @return Number of entities matching given query.
 	 */
 	public long getCount(CharSequence query, Map<String, ?> params) {
@@ -388,6 +380,7 @@ public abstract class AbstractGenericDao<T extends AbstractGenericEntity> {
 	 * Count entities matching given query.
 	 *
 	 * @param query Query.
+	 *
 	 * @return Number of entities matching given query.
 	 */
 	public long getCount(Query query) {

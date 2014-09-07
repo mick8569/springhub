@@ -3,8 +3,8 @@ package com.mjeanroy.springhub.mappers;
 import com.mjeanroy.springhub.commons.reflections.ReflectionUtils;
 import com.mjeanroy.springhub.dao.GenericDao;
 import com.mjeanroy.springhub.dto.AbstractDto;
-import com.mjeanroy.springhub.models.AbstractModel;
-import com.mjeanroy.springhub.models.entities.AbstractEntity;
+import com.mjeanroy.springhub.models.Model;
+import com.mjeanroy.springhub.models.entities.JPAEntity;
 import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ import static com.mjeanroy.springhub.commons.collections.CollectionsUtils.size;
 import static java.util.Collections.emptyMap;
 
 @Component
-public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto> {
+public class AbstractMapper<MODEL extends Model, DTO extends AbstractDto> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMapper.class);
 
@@ -114,8 +114,8 @@ public class AbstractMapper<MODEL extends AbstractModel, DTO extends AbstractDto
 	protected MODEL createEntity(DTO dto) {
 		MODEL model = null;
 
-		if (!dto.isNew() && AbstractEntity.class.isAssignableFrom(modelClass)) {
-			model = (MODEL) genericDao.find(this.modelClass.asSubclass(AbstractEntity.class), dto.getId());
+		if (!dto.isNew() && JPAEntity.class.isAssignableFrom(modelClass)) {
+			model = (MODEL) genericDao.find(this.modelClass.asSubclass(JPAEntity.class), dto.getId());
 		} else {
 			try {
 				model = this.modelClass.newInstance();

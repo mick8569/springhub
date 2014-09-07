@@ -1,6 +1,6 @@
 package com.mjeanroy.springhub.dao;
 
-import com.mjeanroy.springhub.models.entities.AbstractEntity;
+import com.mjeanroy.springhub.models.entities.JPAEntity;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -14,7 +14,7 @@ import javax.persistence.PersistenceContext;
  *
  * @param <T> Entity Class used by this dao.
  */
-public abstract class AbstractDao<T extends AbstractEntity> extends AbstractGenericDao<T> {
+public abstract class AbstractDao<T extends JPAEntity> extends AbstractGenericDao<T> {
 
 	/** Entity manager */
 	@PersistenceContext

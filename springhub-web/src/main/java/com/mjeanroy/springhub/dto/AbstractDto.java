@@ -1,24 +1,23 @@
 package com.mjeanroy.springhub.dto;
 
-import static java.util.Collections.unmodifiableMap;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.mjeanroy.springhub.commons.web.json.Json;
+import com.mjeanroy.springhub.models.entities.JPAEntity;
+import org.apache.commons.beanutils.BeanMap;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.beanutils.BeanMap;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.mjeanroy.springhub.commons.web.json.Json;
-import com.mjeanroy.springhub.models.AbstractModel;
+import static java.util.Collections.unmodifiableMap;
 
 @SuppressWarnings("serial")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
-public class AbstractDto<MODEL extends AbstractModel> implements Serializable {
+public class AbstractDto<MODEL extends JPAEntity> implements Serializable {
 
 	/** DTO identifier */
 	protected Long id;
@@ -35,7 +34,7 @@ public class AbstractDto<MODEL extends AbstractModel> implements Serializable {
 	 */
 	public AbstractDto(MODEL entity) {
 		super();
-		this.id = entity.modelId();
+		this.id = entity.getId();
 	}
 
 	/**

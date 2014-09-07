@@ -1,7 +1,7 @@
 package com.mjeanroy.springhub.services;
 
 import com.mjeanroy.springhub.dao.GenericDao;
-import com.mjeanroy.springhub.models.entities.AbstractEntity;
+import com.mjeanroy.springhub.models.entities.identity.AbstractEntity;
 import org.fest.assertions.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;

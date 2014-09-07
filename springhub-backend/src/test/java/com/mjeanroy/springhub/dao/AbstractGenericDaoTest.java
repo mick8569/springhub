@@ -1,6 +1,6 @@
 package com.mjeanroy.springhub.dao;
 
-import com.mjeanroy.springhub.models.entities.AbstractGenericEntity;
+import com.mjeanroy.springhub.models.entities.identity.AbstractEntity;
 import org.junit.Test;
 
 import javax.persistence.EntityManager;
@@ -213,39 +213,6 @@ public class AbstractGenericDaoTest {
 		assertThat(results).isNotNull().hasSameSizeAs(entities).isEqualTo(entities);
 		verify(entityManager).createQuery("SELECT x FROM FooEntity x");
 		verify(query).getResultList();
-	}
-
-	@Test
-	public void test_indexBy() {
-		// GIVEN
-		long idFoo1 = 1L;
-		long idFoo2 = 2L;
-		long idFoo5 = 5L;
-
-		FooEntity foo1 = new FooEntity(idFoo1);
-		FooEntity foo2 = new FooEntity(idFoo2);
-		FooEntity foo5 = new FooEntity(idFoo5);
-		List<FooEntity> entities = asList(foo1, foo2, foo5);
-
-		List<Long> ids = asList(idFoo1, idFoo2, idFoo5);
-
-		Query query = mock(Query.class);
-
-		String sql = "SELECT x FROM FooEntity x WHERE x.id IN (:values)";
-		when(entityManager.createQuery(sql)).thenReturn(query);
-		when(query.getResultList()).thenReturn(entities);
-
-		// WHEN
-		Map<Long, FooEntity> results = dao().indexBy(ids, "id");
-
-		// THEN
-		assertThat(results).isNotNull().hasSameSizeAs(entities);
-		assertThat(results.get(idFoo1)).isNotNull().isEqualTo(foo1);
-		assertThat(results.get(idFoo2)).isNotNull().isEqualTo(foo2);
-		assertThat(results.get(idFoo5)).isNotNull().isEqualTo(foo5);
-		verify(entityManager).createQuery(sql);
-		verify(query).getResultList();
-		verify(query).setParameter("values", ids);
 	}
 
 	@Test
@@ -573,8 +540,7 @@ public class AbstractGenericDaoTest {
 		verify(query).getSingleResult();
 	}
 
-	private static class FooEntity extends AbstractGenericEntity {
-		private Long id;
+	private static class FooEntity extends AbstractEntity {
 
 		public FooEntity() {
 		}
@@ -587,9 +553,8 @@ public class AbstractGenericDaoTest {
 			return id;
 		}
 
-		@Override
-		public Long entityId() {
-			return 1L;
+		public void setId(Long id) {
+			this.id = id;
 		}
 	}
 }
