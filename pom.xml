@@ -78,7 +78,7 @@
 		<spring-tx.version>${spring.version}</spring-tx.version>
 		<spring-web.version>${spring.version}</spring-web.version>
 		<spring-webmvc.version>${spring.version}</spring-webmvc.version>
-		<spring-data-jpa.version>1.6.0.RELEASE</spring-data-jpa.version>
+		<spring-data-jpa.version>1.7.0.RELEASE</spring-data-jpa.version>
 
 		<!-- Java Mail API -->
 		<javax-mail.version>1.4.7</javax-mail.version>
