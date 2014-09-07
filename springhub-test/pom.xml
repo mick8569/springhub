@@ -11,7 +11,7 @@
 	<artifactId>springhub-test</artifactId>
 
 	<properties>
-		<powermock.version>1.5.5</powermock.version>
+		<powermock.version>1.5.6</powermock.version>
 		<powermock-api-mockito.version>${powermock.version}</powermock-api-mockito.version>
 		<powermock-module-junit4.version>${powermock.version}</powermock-module-junit4.version>
 		<hsqldb.version>1.8.0.10</hsqldb.version>
