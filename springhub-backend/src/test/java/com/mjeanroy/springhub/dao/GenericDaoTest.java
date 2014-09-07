@@ -1,7 +1,7 @@
 package com.mjeanroy.springhub.dao;
 
 import com.mjeanroy.springhub.exceptions.NotImplementedException;
-import com.mjeanroy.springhub.models.entities.AbstractEntity;
+import com.mjeanroy.springhub.models.entities.identity.AbstractEntity;
 import org.fest.assertions.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,9 +42,9 @@ public class GenericDaoTest {
 	}
 
 	@Test(expected = NotImplementedException.class)
-        public void test_getReference() {
-                dao.getReference(1L);
-        }
+	public void test_getReference() {
+		dao.getReference(1L);
+	}
 
 	@Test
 	public void test_find_class() {
@@ -55,20 +55,20 @@ public class GenericDaoTest {
 	}
 
 	@Test
-        public void test_getReference_class() {
-                Mockito.when(entityManager.getReference(FooEntity.class, 1L)).thenReturn(new FooEntity());
-                FooEntity result = dao.getReference(FooEntity.class, 1L);
-                Assertions.assertThat(result).isNotNull();
-                Mockito.verify(entityManager).getReference(FooEntity.class, 1L);
-        }
+	public void test_getReference_class() {
+		Mockito.when(entityManager.getReference(FooEntity.class, 1L)).thenReturn(new FooEntity());
+		FooEntity result = dao.getReference(FooEntity.class, 1L);
+		Assertions.assertThat(result).isNotNull();
+		Mockito.verify(entityManager).getReference(FooEntity.class, 1L);
+	}
 
 	@Test
-        public void test_getReference_exception_class() {
-                Mockito.when(entityManager.getReference(FooEntity.class, 1L)).thenThrow(EntityNotFoundException.class);
-                FooEntity result = dao.getReference(FooEntity.class, 1L);
-                Assertions.assertThat(result).isNull();
-                Mockito.verify(entityManager).getReference(FooEntity.class, 1L);
-        }
+	public void test_getReference_exception_class() {
+		Mockito.when(entityManager.getReference(FooEntity.class, 1L)).thenThrow(EntityNotFoundException.class);
+		FooEntity result = dao.getReference(FooEntity.class, 1L);
+		Assertions.assertThat(result).isNull();
+		Mockito.verify(entityManager).getReference(FooEntity.class, 1L);
+	}
 
 	@Test
 	public void test_findAll_class() {

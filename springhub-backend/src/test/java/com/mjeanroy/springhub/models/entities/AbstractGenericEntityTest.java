@@ -1,5 +1,6 @@
 package com.mjeanroy.springhub.models.entities;
 
+import com.mjeanroy.springhub.models.entities.identity.AbstractEntity;
 import org.fest.assertions.api.Assertions;
 import org.junit.Test;
 
@@ -52,29 +53,17 @@ public class AbstractGenericEntityTest {
 		Assertions.assertThat(foo2.isNew()).isTrue();
 	}
 
-	private static class FooEntity1 extends AbstractGenericEntity {
-		private Long id;
+	private static class FooEntity1 extends AbstractEntity {
 
 		public FooEntity1(Long id) {
 			this.id = id;
 		}
-
-		@Override
-		public Long entityId() {
-			return id;
-		}
 	}
 
-	private static class FooEntity2 extends AbstractGenericEntity {
-		private Long id;
+	private static class FooEntity2 extends AbstractEntity {
 
 		public FooEntity2(Long id) {
 			this.id = id;
-		}
-
-		@Override
-		public Long entityId() {
-			return id;
 		}
 	}
 }

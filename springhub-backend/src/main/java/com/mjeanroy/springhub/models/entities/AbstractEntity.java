@@ -1,53 +1,42 @@
 package com.mjeanroy.springhub.models.entities;
 
-import javax.persistence.*;
+import com.mjeanroy.springhub.models.AbstractModel;
+import com.mjeanroy.springhub.models.Model;
+
+import javax.persistence.MappedSuperclass;
 
 /**
- * Entity using default configuration :
- * <ul>
- * <li>Primary key is a Long.</li>
- * <li>Identifier is stored in a column named 'ID'</li>
- * <li>Id is generated using {@linkplain javax.persistence.GenerationType#IDENTITY}</li>
- * </ul>
+ * Abstract implementation of jpa entity.
+ * This abstraction defines commons methods using getId implementation: toString, equals and hashCode.
+ *
+ * TODO use generic type for id
+ * TODO fix hashCode when getId is null: hashCode value should not changed once object is created.
  */
 @MappedSuperclass
-public abstract class AbstractEntity extends AbstractGenericEntity {
+public abstract class AbstractEntity extends AbstractModel implements Model, JPAEntity {
 
-	/** Id of entity */
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(nullable = false, precision = 22, scale = 0)
-	protected Long id;
-
-	public AbstractEntity() {
-		super();
+	@Override
+	public String toString() {
+		return String.format("%s{id=%s}", getClass().getSimpleName(), getId());
 	}
 
 	@Override
-	public Long entityId() {
-		return getId();
+	public int hashCode() {
+		Long id = getId();
+		return id == null ? 0 : id.hashCode();
 	}
 
 	@Override
-	public Long modelId() {
-		return getId();
-	}
-
-	/**
-	 * Get {@link #id}
-	 *
-	 * @return {@link #id}
-	 */
-	public Long getId() {
-		return id;
-	}
-
-	/**
-	 * Set {@link #id}
-	 *
-	 * @param id
-	 */
-	public void setId(Long id) {
-		this.id = id;
+	public boolean equals(Object o) {
+		if (o == this) {
+			return true;
+		}
+		if (o != null && getClass().equals(o.getClass())) {
+			AbstractEntity entity = (AbstractEntity) o;
+			Long id1 = getId();
+			Long id2 = entity.getId();
+			return id1 != null && id2 != null && id1.equals(id2);
+		}
+		return false;
 	}
 }

@@ -1,15 +1,14 @@
 package com.mjeanroy.springhub.dto;
 
-import static com.google.common.collect.Sets.newHashSet;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.fest.assertions.api.Assertions.entry;
+import com.mjeanroy.springhub.models.AbstractModel;
+import org.junit.Test;
 
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Test;
-
-import com.mjeanroy.springhub.models.AbstractModel;
+import static com.google.common.collect.Sets.newHashSet;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.entry;
 
 public class AbstractDtoTest {
 
@@ -98,12 +97,12 @@ public class AbstractDtoTest {
 	public static class FooModel extends AbstractModel {
 
 		@Override
-		public Long modelId() {
+		public Long getId() {
 			return 1L;
 		}
 	}
 
-	public static class FooDto extends AbstractDto<FooModel> {
+	public static class FooDto extends AbstractDto {
 		private String name;
 
 		public FooDto() {

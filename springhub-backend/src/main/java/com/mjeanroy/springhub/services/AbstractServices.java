@@ -2,7 +2,7 @@ package com.mjeanroy.springhub.services;
 
 import com.mjeanroy.springhub.commons.reflections.ReflectionUtils;
 import com.mjeanroy.springhub.dao.GenericDao;
-import com.mjeanroy.springhub.models.entities.AbstractEntity;
+import com.mjeanroy.springhub.models.entities.JPAEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +16,7 @@ import java.util.List;
  * @param <T> Entity class.
  */
 @Service
-public abstract class AbstractServices<T extends AbstractEntity> {
+public abstract class AbstractServices<T extends JPAEntity> {
 
 	/** Generic type implemented with concrete service */
 	protected Class<T> type = null;

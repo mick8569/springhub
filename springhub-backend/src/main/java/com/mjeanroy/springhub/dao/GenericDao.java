@@ -1,27 +1,27 @@
 package com.mjeanroy.springhub.dao;
 
 import com.mjeanroy.springhub.exceptions.NotImplementedException;
-import com.mjeanroy.springhub.models.entities.AbstractEntity;
+import com.mjeanroy.springhub.models.entities.JPAEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import javax.persistence.EntityNotFoundException;
+import java.util.List;
 
 /** Generic DAO used to retrieve entities. */
-public class GenericDao extends AbstractDao<AbstractEntity> {
+public class GenericDao extends AbstractDao<JPAEntity> {
 
 	/** Class logger */
 	private static final Logger log = LoggerFactory.getLogger(GenericDao.class);
 
 	@Override
-	public AbstractEntity find(Long id) {
+	public JPAEntity find(Long id) {
 		log.error("You have to specified entity class in generic dao");
 		throw new NotImplementedException("You have to specified entity class in generic dao");
 	}
 
 	@Override
-	public List<AbstractEntity> findAll() {
+	public List<JPAEntity> findAll() {
 		log.error("You have to specified entity class in generic dao");
 		throw new NotImplementedException("You have to specified entity class in generic dao");
 	}
@@ -33,7 +33,7 @@ public class GenericDao extends AbstractDao<AbstractEntity> {
 	}
 
 	@Override
-	public AbstractEntity getReference(Long id) {
+	public JPAEntity getReference(Long id) {
 		log.error("You have to specified entity class in generic dao");
 		throw new NotImplementedException("You have to specified entity class in generic dao");
 	}
@@ -45,7 +45,7 @@ public class GenericDao extends AbstractDao<AbstractEntity> {
 	 * @param primaryKey Id in database.
 	 * @return Founded item or null.
 	 */
-	public <T extends AbstractEntity> T find(Class<T> klass, Long primaryKey) {
+	public <T extends JPAEntity> T find(Class<T> klass, Long primaryKey) {
 		return entityManager.find(klass, primaryKey);
 	}
 
@@ -56,7 +56,7 @@ public class GenericDao extends AbstractDao<AbstractEntity> {
 	 * @param primaryKey Id in database.
 	 * @return Reference to founded item or null.
 	 */
-	public <T extends AbstractEntity> T getReference(Class<T> klass, Long primaryKey) {
+	public <T extends JPAEntity> T getReference(Class<T> klass, Long primaryKey) {
 		try {
 			return entityManager.getReference(klass, primaryKey);
 		}
@@ -72,7 +72,7 @@ public class GenericDao extends AbstractDao<AbstractEntity> {
 	 * @return All items in database.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends AbstractEntity> List<T> findAll(Class<T> klass) {
+	public <T extends JPAEntity> List<T> findAll(Class<T> klass) {
 		return (List<T>) entityManager.createQuery("SELECT x FROM " + klass.getSimpleName() + " x").getResultList();
 	}
 
@@ -82,7 +82,7 @@ public class GenericDao extends AbstractDao<AbstractEntity> {
 	 * @param klass Entity class.
 	 * @return Number of items in database.
 	 */
-	public <T extends AbstractEntity> long count(Class<T> klass) {
+	public <T extends JPAEntity> long count(Class<T> klass) {
 		return (Long) entityManager.createQuery("SELECT COUNT(x) FROM " + klass.getSimpleName() + " x").getSingleResult();
 	}
 }
