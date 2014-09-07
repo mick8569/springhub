@@ -68,7 +68,7 @@
 		<validation-api.version>1.1.0.Final</validation-api.version>
 
 		<!-- Spring Version -->
-		<spring.version>4.0.6.RELEASE</spring.version>
+		<spring.version>4.1.0.RELEASE</spring.version>
 		<spring-context.version>${spring.version}</spring-context.version>
 		<spring-context-support.version>${spring.version}</spring-context-support.version>
 		<spring-jdbc.version>${spring.version}</spring-jdbc.version>
