@@ -1,7 +1,6 @@
 package com.mjeanroy.springhub.models.entities;
 
 import javax.persistence.MappedSuperclass;
-
 import java.io.Serializable;
 
 import org.springframework.data.domain.Persistable;

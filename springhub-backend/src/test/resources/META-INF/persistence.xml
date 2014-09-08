@@ -1,0 +1,7 @@
+<!-- Use persistence.xml because spring does not scan entities in tests packages. -->
+<persistence>
+	<persistence-unit>
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+		<class>com.mjeanroy.springhub.utils.FooEntity</class>
+	</persistence-unit>
+</persistence>

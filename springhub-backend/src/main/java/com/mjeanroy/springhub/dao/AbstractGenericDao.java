@@ -1,7 +1,7 @@
 package com.mjeanroy.springhub.dao;
 
+import static com.google.common.collect.Iterables.isEmpty;
 import static com.mjeanroy.springhub.commons.reflections.ReflectionUtils.getGenericType;
-import static org.springframework.transaction.annotation.Propagation.REQUIRED;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
@@ -9,8 +9,11 @@ import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,22 +25,32 @@ import com.mjeanroy.springhub.models.entities.JPAEntity;
 
 /**
  * DAO implementation.
+ * This dao implementation provide shortcuts to commons methods used
+ * with {@link EntityManager} instance.
  *
  * @param <PK> Type of entity id.
  * @param <T> Entity class.
  */
+@SuppressWarnings("unchecked")
 @Repository
 public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAEntity<PK>> {
 
 	/** Parametrized class */
-	protected Class<T> type = null;
+	protected final Class<T> type;
 
-	@SuppressWarnings("unchecked")
-	public AbstractGenericDao() {
+	/**
+	 * Create new DAO.
+	 * Generic type is automatically retrieved by reflection.
+	 */
+	protected AbstractGenericDao() {
 		this.type = (Class<T>) getGenericType(getClass(), 1);
 	}
 
-	/** Entity Manager */
+	/**
+	 * Access to entity Manager.
+	 * This method should return entity manager to use with this
+	 * dao implementation.
+	 */
 	protected abstract EntityManager entityManager();
 
 	/**
@@ -58,12 +71,16 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 		entityManager().setFlushMode(flushMode);
 	}
 
-	/** Flush persistence context. */
+	/**
+	 * Flush persistence context.
+	 */
 	public void flush() {
 		entityManager().flush();
 	}
 
-	/** Clear persistence context */
+	/**
+	 * Clear persistence context
+	 */
 	public void clear() {
 		entityManager().clear();
 	}
@@ -72,7 +89,6 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 * Check if an entity is managed by the persistence context.
 	 *
 	 * @param o Entity to check.
-	 *
 	 * @return True if entity is managed, false otherwise.
 	 */
 	public boolean isManaged(T o) {
@@ -84,7 +100,7 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 *
 	 * @param o Entity to persist.
 	 */
-	@Transactional(readOnly = false, propagation = REQUIRED)
+	@Transactional
 	public void persist(T o) {
 		entityManager().persist(o);
 	}
@@ -93,10 +109,9 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 * Merge an entity into the current persistence context.
 	 *
 	 * @param o Entity to merge.
-	 *
 	 * @return Merged entity.
 	 */
-	@Transactional(readOnly = false, propagation = REQUIRED)
+	@Transactional
 	public T merge(T o) {
 		return entityManager().merge(o);
 	}
@@ -106,7 +121,7 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 *
 	 * @param o Entity to remove.
 	 */
-	@Transactional(readOnly = false, propagation = REQUIRED)
+	@Transactional
 	public void remove(T o) {
 		entityManager().remove(o);
 	}
@@ -147,7 +162,7 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 *
 	 * @return Entity.
 	 */
-	public T find(PK primaryKey) {
+	public T findOne(PK primaryKey) {
 		return entityManager().find(type, primaryKey);
 	}
 
@@ -158,9 +173,11 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 *
 	 * @return Reference to the entity.
 	 */
-	public T getReference(PK primaryKey) {
+	public T getOne(PK primaryKey) {
 		try {
-			return entityManager().getReference(type, primaryKey);
+			T entity = entityManager().getReference(type, primaryKey);
+			entity.getId();
+			return entity;
 		}
 		catch (EntityNotFoundException ex) {
 			return null;
@@ -172,31 +189,38 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 *
 	 * @return All entity.
 	 */
-	@SuppressWarnings("unchecked")
 	public List<T> findAll() {
-		String sb = "SELECT x FROM " + type.getSimpleName() + " x";
-		Query query = entityManager().createQuery(sb);
-		return query.getResultList();
+		EntityManager em = entityManager();
+		CriteriaBuilder builder = em.getCriteriaBuilder();
+		CriteriaQuery<T> query = builder.createQuery(type);
+		Root<T> root = query.from(type);
+		query.select(root);
+		return em.createQuery(query).getResultList();
 	}
 
 	/**
-	 * Find all entities where attribute value is in given values.
+	 * Find all entities where id is in given collection.
 	 *
 	 * @return Entities.
 	 */
 	@SuppressWarnings("unchecked")
-	public <K> List<T> findIn(Collection<K> values, String attribute) {
-		StringBuilder sb = new StringBuilder()
-				.append("SELECT x FROM ")
-				.append(type.getSimpleName())
-				.append(" x ")
-				.append("WHERE x.")
-				.append(attribute)
-				.append(" IN (:values)");
+	public <K> List<T> findAll(Iterable<K> id) {
+		if (isEmpty(id)) {
+			return new ArrayList<T>();
+		}
 
-		Query query = entityManager().createQuery(sb.toString());
-		query.setParameter("values", values);
-		return query.getResultList();
+		EntityManager em = entityManager();
+		CriteriaBuilder builder = em.getCriteriaBuilder();
+		CriteriaQuery<T> query = builder.createQuery(type);
+		Root<T> root = query.from(type);
+		query.select(root);
+
+		// Select by id
+		query.where(
+				root.get("id").in(id)
+		);
+
+		return em.createQuery(query).getResultList();
 	}
 
 	/**
@@ -206,14 +230,12 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 * @return Entities.
 	 */
 	@SuppressWarnings("unchecked")
-	public Map<PK, T> indexById(Collection<PK> values) {
-		Collection<T> results = findIn(values, "id");
+	public Map<PK, T> indexById(Iterable<PK> values) {
+		List<T> results = findAll(values);
 
 		Map<PK, T> map = new HashMap<PK, T>();
-
 		for (T result : results) {
-			PK value = result.getId();
-			map.put(value, result);
+			map.put(result.getId(), result);
 		}
 
 		return map;
@@ -225,22 +247,23 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 * @return Total number of entities.
 	 */
 	public long count() {
-		String sb = "SELECT COUNT(x) FROM " + type.getSimpleName() + " x";
-		Query query = entityManager().createQuery(sb);
-
-		Long count = (Long) query.getSingleResult();
-		return count == null ? 0L : count;
+		EntityManager em = entityManager();
+		CriteriaBuilder builder = em.getCriteriaBuilder();
+		CriteriaQuery<Long> query = builder.createQuery(Long.class);
+		Root<T> root = query.from(type);
+		query.select(builder.count(root));
+		Long count = em.createQuery(query).getSingleResult();
+		return count == null ? 0 : count;
 	}
 
 	/**
-	 * Find list of entities for a given query.
+	 * Find list of entities for a JPQL query.
 	 *
 	 * @param query Query.
-	 *
 	 * @return All entities matching given query.
 	 */
-	public List<T> getEntityList(CharSequence query) {
-		return getEntityList(query, null);
+	public List<T> findAll(final CharSequence query) {
+		return findAll(query, null);
 	}
 
 	/**
@@ -251,8 +274,8 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 *
 	 * @return All entities matching given query.
 	 */
-	public List<T> getEntityList(CharSequence query, int limit) {
-		return getEntityList(query, null, limit);
+	public List<T> findAll(final CharSequence query, final int limit) {
+		return findAll(query, null, limit);
 	}
 
 	/**
@@ -263,8 +286,8 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 *
 	 * @return All entities matching given query.
 	 */
-	public List<T> getEntityList(CharSequence query, Map<String, Object> params) {
-		return getEntityList(query, params, -1);
+	public List<T> findAll(CharSequence query, Map<String, ?> params) {
+		return findAll(query, params, -1);
 	}
 
 	/**
@@ -276,31 +299,29 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 *
 	 * @return All entities matching given query.
 	 */
-	public List<T> getEntityList(CharSequence query, Map<String, Object> params, int limit) {
+	public List<T> findAll(CharSequence query, Map<String, ?> params, int limit) {
 		Query q = entityManager().createQuery(query.toString());
 
 		if (limit > 0) {
 			q.setMaxResults(limit);
 		}
 
-		if ((params != null) && (!params.isEmpty())) {
-			for (Map.Entry<String, Object> e : params.entrySet()) {
+		if (params != null && !params.isEmpty()) {
+			for (Map.Entry<String, ?> e : params.entrySet()) {
 				q.setParameter(e.getKey(), e.getValue());
 			}
 		}
 
-		return getEntityList(q);
+		return findAll(q);
 	}
 
 	/**
 	 * Get all entities for a given query.
 	 *
 	 * @param query Query.
-	 *
 	 * @return All entities matching given query.
 	 */
-	@SuppressWarnings("unchecked")
-	public List<T> getEntityList(Query query) {
+	public List<T> findAll(Query query) {
 		return (List<T>) query.getResultList();
 	}
 
@@ -311,8 +332,8 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 *
 	 * @return Entity, null if no entity match given query.
 	 */
-	public T getSingleEntity(CharSequence query) {
-		return getSingleEntity(query, null);
+	public T findOne(final CharSequence query) {
+		return findOne(query, null);
 	}
 
 	/**
@@ -320,28 +341,25 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 *
 	 * @param query  Query.
 	 * @param params Query parameters.
-	 *
 	 * @return Entity, null if no entity match given query.
 	 */
-	public T getSingleEntity(CharSequence query, Map<String, ?> params) {
-		Query q = entityManager().createQuery(query.toString());
-		if ((params != null) && (!params.isEmpty())) {
+	public T findOne(final CharSequence query, final Map<String, ?> params) {
+		final Query q = entityManager().createQuery(query.toString());
+		if (params != null && !params.isEmpty()) {
 			for (Map.Entry<String, ?> e : params.entrySet()) {
 				q.setParameter(e.getKey(), e.getValue());
 			}
 		}
-		return getSingleEntity(q);
+		return findOne(q);
 	}
 
 	/**
 	 * Find entity for a given query.
 	 *
 	 * @param query Query.
-	 *
 	 * @return Entity, null if no entity match given query.
 	 */
-	@SuppressWarnings("unchecked")
-	public T getSingleEntity(Query query) {
+	public T findOne(final Query query) {
 		try {
 			return (T) query.getSingleResult();
 		}
@@ -354,11 +372,10 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 * Count entities matching given query.
 	 *
 	 * @param query Query.
-	 *
 	 * @return Number of entities matching given query.
 	 */
-	public long getCount(CharSequence query) {
-		return getCount(query, null);
+	public long count(final CharSequence query) {
+		return count(query, null);
 	}
 
 	/**
@@ -366,17 +383,16 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 *
 	 * @param query  Query.
 	 * @param params Query parameters.
-	 *
 	 * @return Number of entities matching given query.
 	 */
-	public long getCount(CharSequence query, Map<String, ?> params) {
+	public long count(final CharSequence query, final Map<String, ?> params) {
 		Query q = entityManager().createQuery(query.toString());
 		if ((params != null) && (!params.isEmpty())) {
 			for (Map.Entry<String, ?> e : params.entrySet()) {
 				q.setParameter(e.getKey(), e.getValue());
 			}
 		}
-		return getCount(q);
+		return count(q);
 	}
 
 	/**
@@ -386,7 +402,8 @@ public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAE
 	 *
 	 * @return Number of entities matching given query.
 	 */
-	public long getCount(Query query) {
-		return (Long) query.getSingleResult();
+	public long count(final Query query) {
+		Long count = (Long) query.getSingleResult();
+		return count == null ? 0 : count;
 	}
 }

@@ -1,553 +1,280 @@
 package com.mjeanroy.springhub.dao;
 
-import org.junit.Test;
+import static java.util.Arrays.asList;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityNotFoundException;
 import javax.persistence.FlushModeType;
-import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Arrays.asList;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.mjeanroy.springhub.models.entities.auto.AbstractEntity;
+import com.mjeanroy.springhub.utils.DaoTestConfiguration;
+import com.mjeanroy.springhub.utils.FooDao;
+import com.mjeanroy.springhub.utils.FooEntity;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = DaoTestConfiguration.class)
+@TransactionConfiguration(defaultRollback = true)
+@Transactional
 public class AbstractGenericDaoTest {
 
-	private final EntityManager entityManager = mock(EntityManager.class);
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
+	@Autowired
+	private FooDao fooDao;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
 	@Test
-	public void test_getFlushMode() {
-		// GIVEN
-		FlushModeType flushModeType = FlushModeType.COMMIT;
-		when(entityManager.getFlushMode()).thenReturn(flushModeType);
-
-		// WHEN
-		FlushModeType flushMode = dao().getFlushMode();
-
-		// THEN
-		assertThat(flushMode).isEqualTo(flushModeType);
-	}
-
-	@Test
-	public void test_setFlushMode() {
-		// GIVEN
-		FlushModeType flushModeType = FlushModeType.COMMIT;
-
-		// WHEN
-		dao().setFlushMode(flushModeType);
-
-		// THEN
-		verify(entityManager).setFlushMode(flushModeType);
+	public void it_should_get_entity_manager_flush_mode() {
+		FlushModeType flushModeType = fooDao.getFlushMode();
+		assertThat(flushModeType).isNotNull();
 	}
 
 	@Test
-	public void test_flush() {
-		// WHEN
-		dao().flush();
-
-		// THEN
-		verify(entityManager).flush();
+	public void it_should_return_false_if_entity_manager_does_not_contains_entity() {
+		FooEntity entity = new FooEntity();
+		entity.setId(1L);
+		assertThat(fooDao.isManaged(entity)).isFalse();
 	}
 
 	@Test
-	public void test_clear() {
-		// WHEN
-		dao().clear();
-
-		// THEN
-		verify(entityManager).clear();
+	public void it_should_return_false_if_entity_manager_contains_entity() {
+		FooEntity entity = entityManager.find(FooEntity.class, 1L);
+		assertThat(fooDao.isManaged(entity)).isTrue();
 	}
 
 	@Test
-	public void test_merge() {
-		// GIVEN
-		FooEntity foo = mock(FooEntity.class);
+	public void it_should_clear_entity_manager() {
+		FooEntity foo1 = entityManager.find(FooEntity.class, 1L);
+		FooEntity foo2 = entityManager.find(FooEntity.class, 2L);
 
-		FooEntity mergedFoo = mock(FooEntity.class);
-		when(entityManager.merge(foo)).thenReturn(mergedFoo);
+		assertThat(entityManager.contains(foo1)).isTrue();
+		assertThat(entityManager.contains(foo2)).isTrue();
 
-		// WHEN
-		FooEntity result = dao().merge(foo);
+		fooDao.clear();
 
-		// THEN
-		assertThat(result).isEqualTo(mergedFoo);
-		verify(entityManager).merge(foo);
+		assertThat(entityManager.contains(foo1)).isFalse();
+		assertThat(entityManager.contains(foo2)).isFalse();
 	}
 
 	@Test
-	public void test_persist() {
-		// GIVEN
-		FooEntity foo = mock(FooEntity.class);
+	public void it_should_detach_entity() {
+		FooEntity foo1 = entityManager.find(FooEntity.class, 1L);
+		FooEntity foo2 = entityManager.find(FooEntity.class, 2L);
 
-		// WHEN
-		dao().persist(foo);
+		assertThat(entityManager.contains(foo1)).isTrue();
+		assertThat(entityManager.contains(foo2)).isTrue();
 
-		// THEN
-		verify(entityManager).persist(foo);
+		fooDao.detach(foo2);
+
+		assertThat(entityManager.contains(foo1)).isTrue();
+		assertThat(entityManager.contains(foo2)).isFalse();
 	}
 
 	@Test
-	public void test_remove() {
-		// GIVEN
-		FooEntity foo = mock(FooEntity.class);
+	public void it_should_refresh_entity() {
+		FooEntity foo1 = entityManager.find(FooEntity.class, 1L);
+		foo1.setName("foobar");
+		assertThat(foo1.getName()).isEqualTo("foobar");
 
-		// WHEN
-		dao().remove(foo);
+		fooDao.refresh(foo1);
 
-		// THEN
-		verify(entityManager).remove(foo);
+		assertThat(foo1.getName()).isEqualTo("foo");
 	}
 
 	@Test
-	public void test_isManaged() {
-		// GIVEN
-		FooEntity foo = mock(FooEntity.class);
-
-		boolean contains = true;
-		when(entityManager.contains(foo)).thenReturn(contains);
-
-		// WHEN
-		boolean isManaged = dao().isManaged(foo);
-
-		// THEN
-		assertThat(isManaged).isEqualTo(contains);
-		verify(entityManager).contains(foo);
+	public void it_should_get_a_reference_to_an_entity() {
+		FooEntity foo = fooDao.getOne(1L);
+		assertThat(foo).isNotNull();
+		assertThat(foo.getId()).isEqualTo(1L);
 	}
 
 	@Test
-	public void test_detach() {
-		// GIVEN
-		FooEntity foo = mock(FooEntity.class);
-
-		// WHEN
-		dao().detach(foo);
-
-		// THEN
-		verify(entityManager).detach(foo);
+	public void it_should_get_a_reference_to_an_entity_and_return_null_if_entity_is_not_found() {
+		FooEntity foo = fooDao.getOne(1000L);
+		assertThat(foo).isNull();
 	}
 
 	@Test
-	public void test_refresh() {
-		// GIVEN
-		FooEntity foo = mock(FooEntity.class);
+	public void it_should_persist_entity() {
+		String sql = "SELECT COUNT(foo) FROM FooEntity foo";
+		Long countBefore = (Long) entityManager.createQuery(sql).getSingleResult();
 
-		// WHEN
-		dao().refresh(foo);
+		FooEntity foo = new FooEntity();
+		foo.setName("hello world");
+		fooDao.persist(foo);
 
-		// THEN
-		verify(entityManager).refresh(foo);
+		assertThat(foo.getId()).isNotNull();
+		Long countAfter = (Long) entityManager.createQuery(sql).getSingleResult();
+		assertThat(countAfter).isEqualTo(countBefore + 1);
 	}
 
 	@Test
-	public void test_find() {
-		// GIVEN
-		long id = 1L;
-		FooEntity foo = mock(FooEntity.class);
-		when(entityManager.find(FooEntity.class, id)).thenReturn(foo);
+	public void it_should_merge_entity() {
+		FooEntity foo = entityManager.find(FooEntity.class, 1L);
+		foo.setName("foobar");
+		entityManager.detach(foo);
 
-		// WHEN
-		FooEntity result = dao().find(id);
+		FooEntity newFoo = fooDao.merge(foo);
 
-		// THEN
-		assertThat(result).isNotNull().isEqualTo(foo);
-		verify(entityManager).find(FooEntity.class, id);
+		assertThat(newFoo).isNotSameAs(foo);
+		assertThat(newFoo.getName()).isEqualTo("foobar");
 	}
 
 	@Test
-	public void test_getReference() {
-		// GIVEN
-		long id = 1L;
-		FooEntity foo = mock(FooEntity.class);
-		when(entityManager.getReference(FooEntity.class, id)).thenReturn(foo);
+	public void it_should_remove_entity() {
+		String sql = "SELECT COUNT(foo) FROM FooEntity foo";
+		Long countBefore = (Long) entityManager.createQuery(sql).getSingleResult();
 
-		// WHEN
-		FooEntity result = dao().getReference(id);
+		FooEntity foo = entityManager.find(FooEntity.class, 1L);
+		fooDao.remove(foo);
 
-		// THEN
-		assertThat(result).isNotNull().isEqualTo(foo);
-		verify(entityManager).getReference(FooEntity.class, id);
+		Long countAfter = (Long) entityManager.createQuery(sql).getSingleResult();
+		assertThat(countAfter).isEqualTo(countBefore - 1);
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
-	public void test_getReference_notFound() {
-		// GIVEN
-		long id = 1L;
-		when(entityManager.getReference(FooEntity.class, id)).thenThrow(EntityNotFoundException.class);
-
-		// WHEN
-		FooEntity result = dao().getReference(id);
-
-		// THEN
-		assertThat(result).isNull();
-		verify(entityManager).getReference(FooEntity.class, id);
+	public void findOne_should_find_entity_by_id() {
+		FooEntity foo = fooDao.findOne(1L);
+		assertThat(foo).isNotNull();
+		assertThat(foo.getId()).isEqualTo(1L);
 	}
 
 	@Test
-	public void test_findAll() {
-		// GIVEN
-		List<FooEntity> entities = asList(
-				mock(FooEntity.class),
-				mock(FooEntity.class)
-		);
-
-		Query query = mock(Query.class);
-		when(entityManager.createQuery("SELECT x FROM FooEntity x")).thenReturn(query);
-		when(query.getResultList()).thenReturn(entities);
-
-		// WHEN
-		List<FooEntity> results = dao().findAll();
-
-		// THEN
-		assertThat(results).isNotNull().hasSameSizeAs(entities).isEqualTo(entities);
-		verify(entityManager).createQuery("SELECT x FROM FooEntity x");
-		verify(query).getResultList();
+	public void findOne_should_return_null_if_id_does_not_exist() {
+		FooEntity foo = fooDao.findOne(1000L);
+		assertThat(foo).isNull();
 	}
 
 	@Test
-	public void test_indexById() {
-		// GIVEN
-		long idFoo1 = 1L;
-		long idFoo2 = 2L;
-		long idFoo5 = 5L;
-
-		FooEntity foo1 = new FooEntity(idFoo1);
-		FooEntity foo2 = new FooEntity(idFoo2);
-		FooEntity foo5 = new FooEntity(idFoo5);
-		List<FooEntity> entities = asList(foo1, foo2, foo5);
-
-		List<Long> ids = asList(idFoo1, idFoo2, idFoo5);
-
-		Query query = mock(Query.class);
-
-		String sql = "SELECT x FROM FooEntity x WHERE x.id IN (:values)";
-		when(entityManager.createQuery(sql)).thenReturn(query);
-		when(query.getResultList()).thenReturn(entities);
-
-		// WHEN
-		Map<Long, FooEntity> results = dao().indexById(ids);
-
-		// THEN
-		assertThat(results).isNotNull().hasSameSizeAs(entities);
-		assertThat(results.get(idFoo1)).isNotNull().isEqualTo(foo1);
-		assertThat(results.get(idFoo2)).isNotNull().isEqualTo(foo2);
-		assertThat(results.get(idFoo5)).isNotNull().isEqualTo(foo5);
-		verify(entityManager).createQuery(sql);
-		verify(query).getResultList();
-		verify(query).setParameter("values", ids);
+	public void findAll_should_return_everything() {
+		int count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM foo", Integer.class);
+		List<FooEntity> foos = fooDao.findAll();
+		assertThat(foos).isNotNull().isNotEmpty().hasSize(count);
 	}
 
 	@Test
-	public void test_findIn() {
-		// GIVEN
-		List<FooEntity> entities = asList(
-				mock(FooEntity.class),
-				mock(FooEntity.class)
-		);
-
-		List<Long> ids = asList(1L, 2L, 5L);
-
-		Query query = mock(Query.class);
-
-		String sql = "SELECT x FROM FooEntity x WHERE x.id IN (:values)";
-		when(entityManager.createQuery(sql)).thenReturn(query);
-		when(query.getResultList()).thenReturn(entities);
-
-		// WHEN
-		List<FooEntity> results = dao().findIn(ids, "id");
-
-		// THEN
-		assertThat(results).isNotNull().hasSameSizeAs(entities).isEqualTo(entities);
-		verify(entityManager).createQuery(sql);
-		verify(query).getResultList();
-		verify(query).setParameter("values", ids);
+	public void findAll_by_id() {
+		List<Long> ids = asList(1L, 2L);
+		List<FooEntity> foos = fooDao.findAll(ids);
+		assertThat(foos).isNotNull().hasSize(ids.size());
 	}
 
 	@Test
-	public void test_count() {
-		// GIVEN
-		Query query = mock(Query.class);
-		when(entityManager.createQuery("SELECT COUNT(x) FROM FooEntity x")).thenReturn(query);
-
-		long countResult = 2L;
-		when(query.getSingleResult()).thenReturn(countResult);
-
-		// WHEN
-		long count = dao().count();
-
-		// THEN
-		assertThat(count).isEqualTo(countResult);
-		verify(entityManager).createQuery("SELECT COUNT(x) FROM FooEntity x");
-		verify(query).getSingleResult();
+	public void index_by_id() {
+		List<Long> ids = asList(1L, 2L);
+		Map<Long, FooEntity> foos = fooDao.indexById(ids);
+		assertThat(foos).isNotNull().hasSize(ids.size());
+		assertThat(foos.get(1L).getId()).isEqualTo(1L);
+		assertThat(foos.get(2L).getId()).isEqualTo(2L);
 	}
 
 	@Test
-	public void test_count_returnNull() {
-		// GIVEN
-		Query query = mock(Query.class);
-		when(entityManager.createQuery("SELECT COUNT(x) FROM FooEntity x")).thenReturn(query);
-		when(query.getSingleResult()).thenReturn(null);
-
-		// WHEN
-		long count = dao().count();
-
-		// THEN
-		assertThat(count).isZero();
+	public void count_should_return_number_of_entities() {
+		int realCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM foo", Integer.class);
+		long count = fooDao.count();
+		assertThat(count).isEqualTo(realCount);
 	}
 
 	@Test
-	public void test_getEntityList_singleQuery() {
-		// GIVEN
-		List<FooEntity> entities = asList(
-				mock(FooEntity.class),
-				mock(FooEntity.class)
-		);
-
-		String jpql = "SELECT x FROM FooEntity x WHERE x.ID = 1";
-		Query query = mock(Query.class);
-		when(entityManager.createQuery(jpql)).thenReturn(query);
-		when(query.getResultList()).thenReturn(entities);
-
-		// WHEN
-		List<FooEntity> results = dao().getEntityList(jpql);
-
-		// THEN
-		assertThat(results).isNotNull().hasSameSizeAs(entities).isEqualTo(entities);
-		verify(entityManager).createQuery(jpql);
-		verify(query).getResultList();
-		verify(query, never()).setParameter(anyString(), anyObject());
-		verify(query, never()).setMaxResults(anyInt());
+	public void findAll_using_jpql_query() {
+		String jpql = "SELECT foo FROM FooEntity foo WHERE foo.name = 'foo'";
+		List<FooEntity> foos = fooDao.findAll(jpql);
+		assertThat(foos).isNotNull().isNotEmpty();
 	}
 
 	@Test
-	public void test_getEntityList_singleQueryWithLimit() {
-		// GIVEN
-		List<FooEntity> entities = asList(
-				mock(FooEntity.class),
-				mock(FooEntity.class)
-		);
+	public void findAll_using_jpql_query_and_parameters() {
+		String jpql = "SELECT foo FROM FooEntity foo WHERE foo.name = :name";
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("name", "foo");
 
-		String jpql = "SELECT x FROM FooEntity x WHERE x.ID = 1";
-		Query query = mock(Query.class);
-		when(entityManager.createQuery(jpql)).thenReturn(query);
-		when(query.getResultList()).thenReturn(entities);
+		List<FooEntity> foos = fooDao.findAll(jpql, params);
 
-		int limit = 10;
-
-		// WHEN
-		List<FooEntity> results = dao().getEntityList(jpql, limit);
-
-		// THEN
-		assertThat(results).isNotNull().hasSameSizeAs(entities).isEqualTo(entities);
-		verify(entityManager).createQuery(jpql);
-		verify(query).getResultList();
-		verify(query, never()).setParameter(anyString(), anyObject());
-		verify(query).setMaxResults(limit);
+		assertThat(foos).isNotNull().isNotEmpty();
 	}
 
 	@Test
-	public void test_getEntityList_singleQueryWithParameters() {
-		// GIVEN
-		List<FooEntity> entities = asList(
-				mock(FooEntity.class),
-				mock(FooEntity.class)
-		);
+	public void findAll_using_query() {
+		Query query = entityManager.createQuery("SELECT foo FROM FooEntity foo WHERE foo.name = :name");
+		query.setParameter("name", "foo");
 
-		String jpql = "SELECT x FROM FooEntity x WHERE x.ID = :id";
+		List<FooEntity> foos = fooDao.findAll(query);
 
-		String parameterKey = "id";
-		long parameterValue = 1L;
-		Map<String, Object> parameters = new HashMap<String, Object>();
-		parameters.put(parameterKey, parameterValue);
-
-		Query query = mock(Query.class);
-		when(entityManager.createQuery(jpql)).thenReturn(query);
-		when(query.getResultList()).thenReturn(entities);
-
-		// WHEN
-		List<FooEntity> results = dao().getEntityList(jpql, parameters);
-
-		// THEN
-		assertThat(results).isNotNull().hasSameSizeAs(entities).isEqualTo(entities);
-		verify(entityManager).createQuery(jpql);
-		verify(query).getResultList();
-		verify(query).setParameter(parameterKey, parameterValue);
-		verify(query, never()).setMaxResults(anyInt());
+		assertThat(foos).isNotNull().isNotEmpty();
 	}
 
 	@Test
-	public void test_getEntityList_singleQueryWithLimitAndParameters() {
-		// GIVEN
-		List<FooEntity> entities = asList(
-				mock(FooEntity.class),
-				mock(FooEntity.class)
-		);
-
-		String jpql = "SELECT x FROM FooEntity x WHERE x.ID = :id";
-
-		String parameterKey = "id";
-		long parameterValue = 1L;
-		Map<String, Object> parameters = new HashMap<String, Object>();
-		parameters.put(parameterKey, parameterValue);
-
-		Query query = mock(Query.class);
-		when(entityManager.createQuery(jpql)).thenReturn(query);
-		when(query.getResultList()).thenReturn(entities);
-
-		int limit = 10;
-
-		// WHEN
-		List<FooEntity> results = dao().getEntityList(jpql, parameters, limit);
-
-		// THEN
-		assertThat(results).isNotNull().hasSameSizeAs(entities).isEqualTo(entities);
-		verify(entityManager).createQuery(jpql);
-		verify(query).getResultList();
-		verify(query).setParameter(parameterKey, parameterValue);
-		verify(query).setMaxResults(limit);
+	public void findOne_using_jpql_query() {
+		String jpql = "SELECT foo FROM FooEntity foo WHERE foo.id = 1";
+		FooEntity foo = fooDao.findOne(jpql);
+		assertThat(foo).isNotNull();
 	}
 
 	@Test
-	public void test_getSingleEntity() {
-		// GIVEN
-		FooEntity foo = mock(FooEntity.class);
-
-		String jpql = "SELECT x FROM FooEntity x WHERE x.ID = 1";
-
-		Query query = mock(Query.class);
-		when(entityManager.createQuery(jpql)).thenReturn(query);
-		when(query.getSingleResult()).thenReturn(foo);
-
-		// WHEN
-		FooEntity result = dao().getSingleEntity(jpql);
-
-		// THEN
-		assertThat(result).isNotNull().isEqualTo(foo);
-		verify(entityManager).createQuery(jpql);
-		verify(query).getSingleResult();
-		verify(query, never()).setParameter(anyString(), anyObject());
+	public void findOne_should_return_null_if_entity_does_not_exist() {
+		String jpql = "SELECT foo FROM FooEntity foo WHERE foo.id = 1000";
+		FooEntity foo = fooDao.findOne(jpql);
+		assertThat(foo).isNull();
 	}
 
 	@Test
-	public void test_getSingleEntity_withParameters() {
-		// GIVEN
-		FooEntity foo = mock(FooEntity.class);
+	public void findOne_using_jpql_query_and_parameters() {
+		String jpql = "SELECT foo FROM FooEntity foo WHERE foo.id = :id";
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("id", 1L);
 
-		String parameterKey = "id";
-		long parameterValue = 1L;
-		Map<String, Object> parameters = new HashMap<String, Object>();
-		parameters.put(parameterKey, parameterValue);
-
-		String jpql = "SELECT x FROM FooEntity x WHERE x.ID = :id";
-
-		Query query = mock(Query.class);
-		when(entityManager.createQuery(jpql)).thenReturn(query);
-		when(query.getSingleResult()).thenReturn(foo);
-
-		// WHEN
-		FooEntity result = dao().getSingleEntity(jpql, parameters);
-
-		// THEN
-		assertThat(result).isNotNull().isEqualTo(foo);
-		verify(entityManager).createQuery(jpql);
-		verify(query).getSingleResult();
-		verify(query).setParameter(parameterKey, parameterValue);
+		FooEntity foo = fooDao.findOne(jpql, params);
+		assertThat(foo).isNotNull();
 	}
 
 	@Test
-	public void test_getCount() {
-		// GIVEN
-		String jpql = "SELECT COUNT(x) FROM FooEntity x WHERE x.ID = 1";
+	public void findOne_using_query() {
+		Query query = entityManager.createQuery("SELECT foo FROM FooEntity foo WHERE foo.id = :id");
+		query.setParameter("id", 1L);
 
-		Query query = mock(Query.class);
-		when(entityManager.createQuery(jpql)).thenReturn(query);
-
-		long countValue = 2L;
-		when(query.getSingleResult()).thenReturn(countValue);
-
-		// WHEN
-		long result = dao().getCount(jpql);
-
-		// THEN
-		assertThat(result).isEqualTo(countValue);
-		verify(entityManager).createQuery(jpql);
-		verify(query).getSingleResult();
-		verify(query, never()).setParameter(anyString(), anyObject());
+		FooEntity foo = fooDao.findOne(query);
+		assertThat(foo).isNotNull();
 	}
 
 	@Test
-	public void test_getCount_withParameter() {
-		// GIVEN
-		String parameterKey = "id";
-		long parameterValue = 1L;
-		Map<String, Object> parameters = new HashMap<String, Object>();
-		parameters.put(parameterKey, parameterValue);
-
-		String jpql = "SELECT COUNT(x) FROM FooEntity x WHERE x.ID = :id";
-
-		Query query = mock(Query.class);
-		when(entityManager.createQuery(jpql)).thenReturn(query);
-
-		long countValue = 2L;
-		when(query.getSingleResult()).thenReturn(countValue);
-
-		// WHEN
-		long result = dao().getCount(jpql, parameters);
-
-		// THEN
-		assertThat(result).isEqualTo(countValue);
-		verify(entityManager).createQuery(jpql);
-		verify(query).getSingleResult();
-		verify(query).setParameter(parameterKey, parameterValue);
-	}
-
-	private AbstractGenericDao<Long, FooEntity> dao() {
-		return new AbstractGenericDao<Long, FooEntity>() {
-			@Override
-			protected EntityManager entityManager() {
-				return entityManager;
-			}
-		};
+	public void count_using_jpql_query() {
+		String jpql = "SELECT COUNT(foo) FROM FooEntity foo WHERE foo.name = 'foo'";
+		long count = fooDao.count(jpql);
+		assertThat(count).isNotNull().isNotZero();
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
-	public void test_getSingleEntity_noResultException() {
-		// GIVEN
-		String jpql = "SELECT x FROM FooEntity x WHERE x.ID = 1";
+	public void count_using_jpql_query_and_parameters() {
+		String jpql = "SELECT COUNT(foo) FROM FooEntity foo WHERE foo.name = :name";
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("name", "foo");
 
-		Query query = mock(Query.class);
-		when(entityManager.createQuery(jpql)).thenReturn(query);
-		when(query.getSingleResult()).thenThrow(NoResultException.class);
-
-		// WHEN
-		FooEntity result = dao().getSingleEntity(jpql);
-
-		// THEN
-		assertThat(result).isNull();
-		verify(entityManager).createQuery(jpql);
-		verify(query).getSingleResult();
+		long count = fooDao.count(jpql, params);
+		assertThat(count).isNotNull().isNotZero();
 	}
 
-	private static class FooEntity extends AbstractEntity<Long> {
+	@Test
+	public void count_query() {
+		Query query = entityManager.createQuery("SELECT COUNT(foo) FROM FooEntity foo WHERE foo.name = :name");
+		query.setParameter("name", "foo");
 
-		public FooEntity() {
-		}
-
-		public FooEntity(Long id) {
-			this.id = id;
-		}
+		long count = fooDao.count(query);
+		assertThat(count).isNotNull().isNotZero();
 	}
 }

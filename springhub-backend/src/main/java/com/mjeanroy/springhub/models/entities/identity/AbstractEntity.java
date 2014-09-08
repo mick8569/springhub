@@ -5,12 +5,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-
 import java.io.Serializable;
 
 import org.springframework.data.domain.Persistable;
 
-import com.mjeanroy.springhub.models.AbstractModel;
 import com.mjeanroy.springhub.models.Model;
 import com.mjeanroy.springhub.models.entities.JPAEntity;
 
@@ -26,7 +24,7 @@ import com.mjeanroy.springhub.models.entities.JPAEntity;
  *  @param <PK> Generic type of id.
  */
 @MappedSuperclass
-public abstract class AbstractEntity<PK extends Serializable> extends AbstractModel<PK> implements Model<PK>, JPAEntity<PK>, Persistable<PK> {
+public abstract class AbstractEntity<PK extends Serializable> extends com.mjeanroy.springhub.models.entities.AbstractEntity<PK> implements Model<PK>, JPAEntity<PK>, Persistable<PK> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
