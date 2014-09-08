@@ -1,8 +1,7 @@
 package com.mjeanroy.springhub.dao;
 
-import com.mjeanroy.springhub.models.entities.JPAEntity;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import static com.mjeanroy.springhub.commons.reflections.ReflectionUtils.getGenericType;
+import static org.springframework.transaction.annotation.Propagation.REQUIRED;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
@@ -10,28 +9,32 @@ import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.mjeanroy.springhub.commons.reflections.ReflectionUtils.getGenericType;
-import static org.springframework.transaction.annotation.Propagation.REQUIRED;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.mjeanroy.springhub.models.entities.JPAEntity;
 
 /**
  * DAO implementation.
  *
+ * @param <PK> Type of entity id.
  * @param <T> Entity class.
  */
 @Repository
-public abstract class AbstractGenericDao<T extends JPAEntity> {
+public abstract class AbstractGenericDao<PK extends Serializable, T extends JPAEntity<PK>> {
 
-	/** Parameterized class */
+	/** Parametrized class */
 	protected Class<T> type = null;
 
 	@SuppressWarnings("unchecked")
 	public AbstractGenericDao() {
-		this.type = (Class<T>) getGenericType(getClass(), 0);
+		this.type = (Class<T>) getGenericType(getClass(), 1);
 	}
 
 	/** Entity Manager */
@@ -144,7 +147,7 @@ public abstract class AbstractGenericDao<T extends JPAEntity> {
 	 *
 	 * @return Entity.
 	 */
-	public T find(Long primaryKey) {
+	public T find(PK primaryKey) {
 		return entityManager().find(type, primaryKey);
 	}
 
@@ -155,7 +158,7 @@ public abstract class AbstractGenericDao<T extends JPAEntity> {
 	 *
 	 * @return Reference to the entity.
 	 */
-	public T getReference(Long primaryKey) {
+	public T getReference(PK primaryKey) {
 		try {
 			return entityManager().getReference(type, primaryKey);
 		}
@@ -203,13 +206,13 @@ public abstract class AbstractGenericDao<T extends JPAEntity> {
 	 * @return Entities.
 	 */
 	@SuppressWarnings("unchecked")
-	public Map<Long, T> indexById(Collection<Long> values) {
+	public Map<PK, T> indexById(Collection<PK> values) {
 		Collection<T> results = findIn(values, "id");
 
-		Map<Long, T> map = new HashMap<Long, T>();
+		Map<PK, T> map = new HashMap<PK, T>();
 
 		for (T result : results) {
-			Long value = result.getId();
+			PK value = result.getId();
 			map.put(value, result);
 		}
 

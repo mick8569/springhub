@@ -1,7 +1,11 @@
 package com.mjeanroy.springhub.dao;
 
-import com.mjeanroy.springhub.exceptions.NotImplementedException;
-import com.mjeanroy.springhub.models.entities.identity.AbstractEntity;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
+import javax.persistence.Query;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.fest.assertions.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,11 +14,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityNotFoundException;
-import javax.persistence.Query;
-import java.util.ArrayList;
-import java.util.List;
+import com.mjeanroy.springhub.models.entities.identity.AbstractEntity;
 
 @SuppressWarnings("unchecked")
 @RunWith(MockitoJUnitRunner.class)
@@ -25,26 +25,6 @@ public class GenericDaoTest {
 
 	@InjectMocks
 	private GenericDao dao;
-
-	@Test(expected = NotImplementedException.class)
-	public void test_find() {
-		dao.find(1L);
-	}
-
-	@Test(expected = NotImplementedException.class)
-	public void test_findAll() {
-		dao.findAll();
-	}
-
-	@Test(expected = NotImplementedException.class)
-	public void test_count() {
-		dao.count();
-	}
-
-	@Test(expected = NotImplementedException.class)
-	public void test_getReference() {
-		dao.getReference(1L);
-	}
 
 	@Test
 	public void test_find_class() {

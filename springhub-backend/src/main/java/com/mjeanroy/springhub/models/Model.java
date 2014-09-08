@@ -1,20 +1,22 @@
 package com.mjeanroy.springhub.models;
 
+import java.io.Serializable;
+
 /**
  * Interface describing a model object.
  * Model object can be a JPA entity or any objects
  * that can be identified by an id.
  *
- * TODO use generic type of id
+ * @param <PK> Generic type of id.
  */
-public interface Model {
+public interface Model<PK extends Serializable> {
 
 	/**
 	 * Get id of model object.
 	 *
 	 * @return Id.
 	 */
-	Long getId();
+	PK getId();
 
 	/**
 	 * Check if model object is new.

@@ -1,26 +1,26 @@
 package com.mjeanroy.springhub.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.mjeanroy.springhub.commons.web.json.Json;
-import com.mjeanroy.springhub.models.entities.JPAEntity;
-import org.apache.commons.beanutils.BeanMap;
+import static java.util.Collections.unmodifiableMap;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.util.Collections.unmodifiableMap;
+import org.apache.commons.beanutils.BeanMap;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.mjeanroy.springhub.commons.web.json.Json;
 
 @SuppressWarnings("serial")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
-public class AbstractDto<MODEL extends JPAEntity> implements Serializable {
+public class AbstractDto<PK extends Serializable> implements Serializable {
 
 	/** DTO identifier */
-	protected Long id;
+	protected PK id;
 
 	/** Construct new DTO. */
 	public AbstractDto() {
@@ -28,21 +28,11 @@ public class AbstractDto<MODEL extends JPAEntity> implements Serializable {
 	}
 
 	/**
-	 * Construct new DTO from id of associated Entity.
-	 *
-	 * @param entity Associated model.
-	 */
-	public AbstractDto(MODEL entity) {
-		super();
-		this.id = entity.getId();
-	}
-
-	/**
 	 * Get {@link #id}
 	 *
 	 * @return {@link #id}
 	 */
-	public Long getId() {
+	public PK getId() {
 		return id;
 	}
 
@@ -51,7 +41,7 @@ public class AbstractDto<MODEL extends JPAEntity> implements Serializable {
 	 *
 	 * @param id New {@link #id}
 	 */
-	public void setId(Long id) {
+	public void setId(PK id) {
 		this.id = id;
 	}
 
@@ -62,7 +52,7 @@ public class AbstractDto<MODEL extends JPAEntity> implements Serializable {
 	 */
 	@JsonIgnore
 	public boolean isNew() {
-		return getId() == null || getId().equals(0L);
+		return getId() == null;
 	}
 
 	/**

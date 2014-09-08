@@ -1,14 +1,15 @@
 package com.mjeanroy.springhub.dto;
 
-import com.mjeanroy.springhub.models.AbstractModel;
-import org.junit.Test;
+import static com.google.common.collect.Sets.newHashSet;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.entry;
 
 import java.util.Map;
 import java.util.Set;
 
-import static com.google.common.collect.Sets.newHashSet;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.fest.assertions.api.Assertions.entry;
+import org.junit.Test;
+
+import com.mjeanroy.springhub.models.AbstractModel;
 
 public class AbstractDtoTest {
 
@@ -23,19 +24,6 @@ public class AbstractDtoTest {
 
 		// THEN
 		assertThat(isNew).isFalse();
-	}
-
-	@Test
-	public void isNew_should_return_true_if_bean_has_id_equal_to_zero() {
-		// GIVEN
-		FooDto fooDto = new FooDto();
-		fooDto.setId(0L);
-
-		// WHEN
-		boolean isNew = fooDto.isNew();
-
-		// THEN
-		assertThat(isNew).isTrue();
 	}
 
 	@Test

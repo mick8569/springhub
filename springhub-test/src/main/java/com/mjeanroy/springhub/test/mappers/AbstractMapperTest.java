@@ -7,7 +7,7 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AbstractMapperTest {
+public abstract class AbstractMapperTest {
 
 	@Spy
 	protected Mapper mapper = new DozerBeanMapper();

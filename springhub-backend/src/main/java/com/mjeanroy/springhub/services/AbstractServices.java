@@ -1,14 +1,16 @@
 package com.mjeanroy.springhub.services;
 
-import com.mjeanroy.springhub.commons.reflections.ReflectionUtils;
-import com.mjeanroy.springhub.dao.GenericDao;
-import com.mjeanroy.springhub.models.entities.JPAEntity;
+import javax.inject.Inject;
+import java.io.Serializable;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
-import java.util.List;
+import com.mjeanroy.springhub.commons.reflections.ReflectionUtils;
+import com.mjeanroy.springhub.dao.GenericDao;
+import com.mjeanroy.springhub.models.entities.JPAEntity;
 
 /**
  * Abstract services, implement crud operations on a given entity.
@@ -16,7 +18,7 @@ import java.util.List;
  * @param <T> Entity class.
  */
 @Service
-public abstract class AbstractServices<T extends JPAEntity> {
+public abstract class AbstractServices<PK extends Serializable, T extends JPAEntity<PK>> {
 
 	/** Generic type implemented with concrete service */
 	protected Class<T> type = null;
@@ -26,7 +28,7 @@ public abstract class AbstractServices<T extends JPAEntity> {
 
 	@SuppressWarnings("unchecked")
 	public AbstractServices() {
-		this.type = (Class<T>) ReflectionUtils.getGenericType(getClass(), 0);
+		this.type = (Class<T>) ReflectionUtils.getGenericType(getClass(), 1);
 	}
 
 	/**
@@ -36,7 +38,7 @@ public abstract class AbstractServices<T extends JPAEntity> {
 	 * @return Item or null if id does not exist.
 	 */
 	@Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-	public T get(Long id) {
+	public T get(PK id) {
 		return genericDao.find(type, id);
 	}
 

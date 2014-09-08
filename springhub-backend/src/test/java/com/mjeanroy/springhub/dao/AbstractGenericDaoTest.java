@@ -1,6 +1,5 @@
 package com.mjeanroy.springhub.dao;
 
-import com.mjeanroy.springhub.models.entities.identity.AbstractEntity;
 import org.junit.Test;
 
 import javax.persistence.EntityManager;
@@ -21,6 +20,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.mjeanroy.springhub.models.entities.auto.AbstractEntity;
 
 public class AbstractGenericDaoTest {
 
@@ -512,8 +513,8 @@ public class AbstractGenericDaoTest {
 		verify(query).setParameter(parameterKey, parameterValue);
 	}
 
-	private AbstractGenericDao<FooEntity> dao() {
-		return new AbstractGenericDao<FooEntity>() {
+	private AbstractGenericDao<Long, FooEntity> dao() {
+		return new AbstractGenericDao<Long, FooEntity>() {
 			@Override
 			protected EntityManager entityManager() {
 				return entityManager;
@@ -540,20 +541,12 @@ public class AbstractGenericDaoTest {
 		verify(query).getSingleResult();
 	}
 
-	private static class FooEntity extends AbstractEntity {
+	private static class FooEntity extends AbstractEntity<Long> {
 
 		public FooEntity() {
 		}
 
 		public FooEntity(Long id) {
-			this.id = id;
-		}
-
-		public Long getId() {
-			return id;
-		}
-
-		public void setId(Long id) {
 			this.id = id;
 		}
 	}

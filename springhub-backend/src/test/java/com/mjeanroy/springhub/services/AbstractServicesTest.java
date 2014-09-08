@@ -1,7 +1,8 @@
 package com.mjeanroy.springhub.services;
 
-import com.mjeanroy.springhub.dao.GenericDao;
-import com.mjeanroy.springhub.models.entities.identity.AbstractEntity;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.fest.assertions.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,8 +11,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.mjeanroy.springhub.dao.GenericDao;
+import com.mjeanroy.springhub.models.entities.identity.AbstractEntity;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AbstractServicesTest {
@@ -64,11 +65,11 @@ public class AbstractServicesTest {
 		Mockito.verify(dao).remove(foo);
 	}
 
-	private static class Service extends AbstractServices<FooEntity> {
+	private static class Service extends AbstractServices<Long, FooEntity> {
 
 	}
 
-	private static class FooEntity extends AbstractEntity {
+	private static class FooEntity extends AbstractEntity<Long> {
 
 	}
 }

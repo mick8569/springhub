@@ -1,5 +1,5 @@
 package com.mjeanroy.springhub.mappers;
 
-public class FooMapper extends AbstractMapper<FooModel, FooDto> {
+public class FooMapper extends AbstractMapper<Long, FooModel, FooDto> {
 
 }
