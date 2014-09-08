@@ -1,10 +1,16 @@
 package com.mjeanroy.springhub.mappers;
 
-import com.mjeanroy.springhub.commons.reflections.ReflectionUtils;
-import com.mjeanroy.springhub.dao.GenericDao;
-import com.mjeanroy.springhub.dto.AbstractDto;
-import com.mjeanroy.springhub.models.Model;
-import com.mjeanroy.springhub.models.entities.JPAEntity;
+import static com.mjeanroy.springhub.commons.collections.CollectionsUtils.size;
+import static java.util.Collections.emptyMap;
+
+import javax.inject.Inject;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,18 +18,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static com.mjeanroy.springhub.commons.collections.CollectionsUtils.size;
-import static java.util.Collections.emptyMap;
+import com.mjeanroy.springhub.commons.reflections.ReflectionUtils;
+import com.mjeanroy.springhub.dao.GenericDao;
+import com.mjeanroy.springhub.dto.AbstractDto;
+import com.mjeanroy.springhub.models.entities.JPAEntity;
 
 @Component
-public class AbstractMapper<MODEL extends Model, DTO extends AbstractDto> {
+public class AbstractMapper<PK extends Serializable, MODEL extends JPAEntity<PK>, DTO extends AbstractDto<PK>> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMapper.class);
 
@@ -42,8 +43,8 @@ public class AbstractMapper<MODEL extends Model, DTO extends AbstractDto> {
 	@SuppressWarnings("unchecked")
 	public AbstractMapper() {
 		super();
-		this.modelClass = (Class<MODEL>) ReflectionUtils.getGenericType(getClass(), 0);
-		this.dtoClass = (Class<DTO>) ReflectionUtils.getGenericType(getClass(), 1);
+		this.modelClass = (Class<MODEL>) ReflectionUtils.getGenericType(getClass(), 1);
+		this.dtoClass = (Class<DTO>) ReflectionUtils.getGenericType(getClass(), 2);
 	}
 
 	/**
@@ -112,10 +113,10 @@ public class AbstractMapper<MODEL extends Model, DTO extends AbstractDto> {
 	 */
 	@SuppressWarnings("unchecked")
 	protected MODEL createEntity(DTO dto) {
-		MODEL model = null;
+		MODEL model;
 
 		if (!dto.isNew() && JPAEntity.class.isAssignableFrom(modelClass)) {
-			model = (MODEL) genericDao.find(this.modelClass.asSubclass(JPAEntity.class), dto.getId());
+			model = genericDao.find(modelClass, dto.getId());
 		} else {
 			try {
 				model = this.modelClass.newInstance();
@@ -169,8 +170,8 @@ public class AbstractMapper<MODEL extends Model, DTO extends AbstractDto> {
 		int size = size(dtos);
 		List<MODEL> entities = new ArrayList<MODEL>(size);
 		if (size > 0) {
-			Map<Long, DTO> mapDto = indexDtoById(dtos);
-			Map<Long, MODEL> mapModel = findEntitiesByIndex(mapDto);
+			Map<PK, DTO> mapDto = indexDtoById(dtos);
+			Map<PK, MODEL> mapModel = findEntitiesByIndex(mapDto);
 			for (DTO dto : dtos) {
 				MODEL entity = buildEntity(mapModel, dto);
 				entities.add(entity);
@@ -179,33 +180,33 @@ public class AbstractMapper<MODEL extends Model, DTO extends AbstractDto> {
 		return entities;
 	}
 
-	protected MODEL buildEntity(Map<Long, MODEL> mapModel, DTO dto) {
+	protected MODEL buildEntity(Map<PK, MODEL> mapModel, DTO dto) {
 		MODEL entity = null;
 		if (!dto.isNew()) {
-			Long id = dto.getId();
+			PK id = dto.getId();
 			entity = mapModel.get(id);
 		}
 		return entity == null ? getEntity(dto) : fromDto(entity, dto);
 	}
 
 	@SuppressWarnings("unchecked")
-	protected Map<Long, MODEL> findEntitiesByIndex(Map<Long, DTO> mapDto) {
-		Map<Long, MODEL> mapModel;
+	protected Map<PK, MODEL> findEntitiesByIndex(Map<PK, DTO> mapDto) {
+		Map<PK, MODEL> mapModel;
 
 		if (mapDto.isEmpty()) {
 			mapModel = emptyMap();
 		} else {
-			mapModel = (Map<Long, MODEL>) genericDao.indexById(mapDto.keySet());
+			mapModel = genericDao.indexById(modelClass, mapDto.keySet());
 		}
 
 		return mapModel;
 	}
 
-	protected Map<Long, DTO> indexDtoById(Collection<DTO> dtos) {
-		Map<Long, DTO> mapDto = new HashMap<Long, DTO>();
+	protected Map<PK, DTO> indexDtoById(Collection<DTO> dtos) {
+		Map<PK, DTO> mapDto = new HashMap<PK, DTO>();
 		for (DTO dto : dtos) {
 			if (!dto.isNew()) {
-				Long id = dto.getId();
+				PK id = dto.getId();
 				mapDto.put(id, dto);
 			}
 		}

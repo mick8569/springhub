@@ -1,9 +1,11 @@
 package com.mjeanroy.springhub.mappers;
 
-import com.mjeanroy.springhub.dao.GenericDao;
-import org.dozer.DozerBeanMapper;
-import org.junit.Before;
-import org.junit.Test;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,15 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import org.dozer.DozerBeanMapper;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.mjeanroy.springhub.dao.GenericDao;
 
 @SuppressWarnings("unchecked")
 public class AbstractMapperTest {
@@ -229,7 +227,7 @@ public class AbstractMapperTest {
 		index.put(id1, model1);
 		index.put(id2, model2);
 
-		when(fooMapper.genericDao.indexById(index.keySet())).thenReturn((Map) index);
+		when(fooMapper.genericDao.indexById(FooModel.class, index.keySet())).thenReturn((Map) index);
 
 		// WHEN
 		Collection<FooModel> entities = fooMapper.getEntities(dtos);

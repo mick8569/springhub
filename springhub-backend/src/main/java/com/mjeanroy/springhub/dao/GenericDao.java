@@ -1,62 +1,83 @@
 package com.mjeanroy.springhub.dao;
 
-import com.mjeanroy.springhub.exceptions.NotImplementedException;
-import com.mjeanroy.springhub.models.entities.JPAEntity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
+import javax.persistence.PersistenceContext;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.mjeanroy.springhub.models.entities.JPAEntity;
 
 /** Generic DAO used to retrieve entities. */
-public class GenericDao extends AbstractDao<JPAEntity> {
+public class GenericDao {
 
-	/** Class logger */
-	private static final Logger log = LoggerFactory.getLogger(GenericDao.class);
+	@PersistenceContext
+	protected EntityManager entityManager;
 
-	@Override
-	public JPAEntity find(Long id) {
-		log.error("You have to specified entity class in generic dao");
-		throw new NotImplementedException("You have to specified entity class in generic dao");
+	/**
+	 * Persist entity using entity manager.
+	 *
+	 * @param entity Entity to persist.
+	 * @param <T> Type of entity.
+	 * @return Persisted entity.
+	 */
+	public <T extends JPAEntity> T persist(T entity) {
+		entityManager.persist(entity);
+		return entity;
 	}
 
-	@Override
-	public List<JPAEntity> findAll() {
-		log.error("You have to specified entity class in generic dao");
-		throw new NotImplementedException("You have to specified entity class in generic dao");
+	/**
+	 * Remove entity using entity manager.
+	 *
+	 * @param entity Entity to remove.
+	 * @param <T> Type of entity.
+	 */
+	public <T extends JPAEntity> void remove(T entity) {
+		entityManager.remove(entity);
 	}
 
-	@Override
-	public long count() {
-		log.error("You have to specified entity class in generic dao");
-		throw new NotImplementedException("You have to specified entity class in generic dao");
-	}
-
-	@Override
-	public JPAEntity getReference(Long id) {
-		log.error("You have to specified entity class in generic dao");
-		throw new NotImplementedException("You have to specified entity class in generic dao");
+	/**
+	 * Retrieve list of entities by id and index them in map using id value as key.
+	 *
+	 * @param klass Type of entities to look for.
+	 * @param ids List of id.
+	 * @param <PK> Type of id.
+	 * @param <T> Type of entities.
+	 * @return Map of entities.
+	 */
+	@SuppressWarnings("unchecked")
+	public <PK extends Serializable, T extends JPAEntity<PK>> Map<PK, T> indexById(Class<T> klass, Collection<PK> ids) {
+		List<T> entities = (List<T>) entityManager.createQuery("SELECT x FROM " + klass.getSimpleName() + " x").getResultList();
+		Map<PK, T> map = new HashMap<PK, T>();
+		for (T entity : entities) {
+			PK id = entity.getId();
+			map.put(id, entity);
+		}
+		return map;
 	}
 
 	/**
 	 * Find item in database with its id.
 	 *
-	 * @param klass      Entity class of item to look for.
+	 * @param klass Entity class of item to look for.
 	 * @param primaryKey Id in database.
 	 * @return Founded item or null.
 	 */
-	public <T extends JPAEntity> T find(Class<T> klass, Long primaryKey) {
+	public <PK extends Serializable, T extends JPAEntity<PK>> T find(Class<T> klass, PK primaryKey) {
 		return entityManager.find(klass, primaryKey);
 	}
 
 	/**
 	 * Get reference to an entity with its id.
 	 *
-	 * @param klass      Entity class of item to look for.
+	 * @param klass Entity class of item to look for.
 	 * @param primaryKey Id in database.
 	 * @return Reference to founded item or null.
 	 */
-	public <T extends JPAEntity> T getReference(Class<T> klass, Long primaryKey) {
+	public <PK extends Serializable, T extends JPAEntity<PK>> T getReference(Class<T> klass, PK primaryKey) {
 		try {
 			return entityManager.getReference(klass, primaryKey);
 		}
