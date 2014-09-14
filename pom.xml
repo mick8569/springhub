@@ -52,7 +52,7 @@
 		<maven-deploy-plugin.version>2.8.1</maven-deploy-plugin.version>
 		<maven-release-plugin.version>2.5</maven-release-plugin.version>
 		<maven-source-plugin.version>2.2.1</maven-source-plugin.version>
-		<site-maven-plugin.version>0.9</site-maven-plugin.version>
+		<site-maven-plugin.version>0.10-SNAPSHOT</site-maven-plugin.version>
 		<versions-maven-plugin.version>2.1</versions-maven-plugin.version>
 
 		<!-- Lombok -->
