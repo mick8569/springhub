@@ -3,10 +3,10 @@
   <groupId>com.mjeanroy</groupId>
   <artifactId>springhub-test</artifactId>
   <versioning>
-    <release>0.2.5</release>
+    <release>0.2.6</release>
     <versions>
-      <version>0.2.5</version>
+      <version>0.2.6</version>
     </versions>
-    <lastUpdated>20140807183950</lastUpdated>
+    <lastUpdated>20140914140742</lastUpdated>
   </versioning>
 </metadata>
